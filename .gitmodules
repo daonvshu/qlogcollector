@@ -1,0 +1,3 @@
+[submodule "3rdparty/qtwidgetex"]
+	path = 3rdparty/qtwidgetex
+	url = git@github.com:daonvshu/QtWidgetEx.git

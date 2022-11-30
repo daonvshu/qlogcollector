@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/ic">
+        <file>resources/close.png</file>
+        <file>resources/maxmize.png</file>
+        <file>resources/maxmize2.png</file>
+        <file>resources/minimize.png</file>
+    </qresource>
+</RCC>
