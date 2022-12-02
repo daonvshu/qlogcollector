@@ -11,7 +11,7 @@ namespace logcollector {
         ConfigKey<QString> fileName{"c"};
         ConfigKey<int> codeLine{"d"};
         ConfigKey<QString> threadName{"e"};
-        ConfigKey<int64_t> threadId{"f"};
+        ConfigKey<qint64> threadId{"f"};
         ConfigKey<int> level{"g"};
         ConfigKey<QString> log{"h"};
 

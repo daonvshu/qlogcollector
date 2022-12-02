@@ -18,8 +18,8 @@ namespace logcollector {
 
 
     Cache::Cache(int cacheMaxSize, QObject* parent)
-        : limitSize(cacheMaxSize)
-        , QObject(parent)
+        : QObject(parent)
+        , limitSize(cacheMaxSize)
     {
 
     }

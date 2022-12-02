@@ -6,6 +6,7 @@
 #include <qmutex.h>
 #include <qfileinfo.h>
 #include <qthread.h>
+#include <qdatetime.h>
 
 namespace logcollector {
 

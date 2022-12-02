@@ -7,7 +7,7 @@ namespace logcollector {
 
     class Sender;
     class QLogCollector : public QObject {
-        Q_DISABLE_COPY_MOVE(QLogCollector)
+        Q_DISABLE_COPY(QLogCollector)
 
     public:
         static QLogCollector &init();
