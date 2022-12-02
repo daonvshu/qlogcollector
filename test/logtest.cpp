@@ -4,6 +4,8 @@
 #include <qloggingcategory.h>
 #include <QtConcurrent/QtConcurrent>
 
+#include <styledstring.h>
+
 Q_LOGGING_CATEGORY(mainLog, "main.log")
 
 LogTest::LogTest(QWidget *parent)
@@ -13,6 +15,7 @@ LogTest::LogTest(QWidget *parent)
 
     on_post_main_thread_clicked();
     on_post_work_thread_clicked();
+    on_post_styled_string_clicked();
 }
 
 void LogTest::on_post_main_thread_clicked() {
@@ -33,5 +36,12 @@ void LogTest::on_post_work_thread_clicked() {
     QtConcurrent::run([&]{
         qDebug() << "post a normal log......";
         qCDebug(mainLog) << "post a log with category...... ";
+    });
+}
+
+void LogTest::on_post_styled_string_clicked() {
+    QtConcurrent::run([&]{
+        qDebug() << "post a" + styled("color string", true, true).r().yb(1) + "log";
+        qCDebug(mainLog) << "post a" << styled("color string").b(1).cb() << "log";
     });
 }

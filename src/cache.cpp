@@ -136,7 +136,7 @@ namespace logcollector {
 #elif defined Q_CC_GNU
         std::cout << "\033[4;34m";
 #endif
-        QString line = "(" + message.fileName() + ": " + QString::number(message.codeLine()) + ")";
+        QString line = "(" + message.fileName() + ":" + QString::number(message.codeLine()) + ")";
         std::cout << line.toStdString();
 
 #if defined Q_CC_MSVC

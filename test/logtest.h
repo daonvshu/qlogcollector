@@ -14,4 +14,5 @@ private:
 private slots:
     void on_post_main_thread_clicked();
     void on_post_work_thread_clicked();
+    void on_post_styled_string_clicked();
 };

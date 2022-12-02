@@ -28,6 +28,8 @@ add_library(${PROJECT_NAME}
             cache.cpp
             sender.h
             sender.cpp
+            styledstring.h
+            styledstring.cpp
 
             ${UNISHOX2_PATH}/unishox2.h
             ${UNISHOX2_PATH}/unishox2.c
