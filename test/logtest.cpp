@@ -10,6 +10,9 @@ LogTest::LogTest(QWidget *parent)
     : QWidget(parent)
 {
     ui.setupUi(this);
+
+    on_post_main_thread_clicked();
+    on_post_work_thread_clicked();
 }
 
 void LogTest::on_post_main_thread_clicked() {
