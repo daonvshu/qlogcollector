@@ -94,15 +94,15 @@ namespace logcollector {
             case QtDebugMsg:
                 std::cout << "\033[42m";
                 break;
-            case QtWarningMsg:
-                std::cout << "\033[43m";
-                break;
             case QtInfoMsg:
                 std::cout << "\033[44m";
                 break;
+            case QtWarningMsg:
+                std::cout << "\033[43;30m";
+                break;
             case QtCriticalMsg:
             case QtFatalMsg:
-                std::cout << "\033[41m";
+                std::cout << "\033[41;30m";
                 break;
 #endif
         }
@@ -134,7 +134,7 @@ namespace logcollector {
 #if defined Q_CC_MSVC
         SetConsoleTextAttribute(handle, 0x8001);
 #elif defined Q_CC_GNU
-        std::cout << "\033[34m";
+        std::cout << "\033[4;34m";
 #endif
         QString line = "(" + message.fileName() + ": " + QString::number(message.codeLine()) + ")";
         std::cout << line.toStdString();
