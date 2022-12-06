@@ -26,6 +26,10 @@ add_library(${PROJECT_NAME}
             qlogcollector.cpp
             cache.h
             cache.cpp
+            colorformatter.h
+            colorformatter.cpp
+            console.h
+            console.cpp
             sender.h
             sender.cpp
             styledstring.h

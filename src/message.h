@@ -1,6 +1,6 @@
 #pragma once
 
-#include "configkey.h"
+#include <configkey.h>
 
 namespace logcollector {
 

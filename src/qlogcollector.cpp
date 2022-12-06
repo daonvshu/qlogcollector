@@ -2,6 +2,7 @@
 
 #include "message.h"
 #include "sender.h"
+#include "console.h"
 
 #include <qmutex.h>
 #include <qfileinfo.h>
@@ -19,6 +20,18 @@ namespace logcollector {
 
     QLogCollector &QLogCollector::init() {
         return instance();
+    }
+
+    void QLogCollector::registerLinuxOutput() {
+        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_STANDARD_OUTPUT);
+    }
+
+    void QLogCollector::registerWin32ConsoleAppOutput() {
+        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP);
+    }
+
+    void QLogCollector::registerWin32DebugConsoleOutput() {
+        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE);
     }
 
     void QLogCollector::registerLog() {

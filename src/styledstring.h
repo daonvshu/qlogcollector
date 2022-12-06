@@ -1,20 +1,11 @@
 #pragma once
 
+#include "colorformatter.h"
+
 #include <qobject.h>
 #include <qdebug.h>
 
 namespace logcollector {
-
-    enum class ColorAttr {
-        Unset = 0,
-        Blue,
-        Green,
-        Cyan,
-        Red,
-        Purple,
-        Yellow,
-        White,
-    };
 
     class StyledString {
     public:
@@ -53,12 +44,9 @@ namespace logcollector {
 
     private:
         QString mLog;
-        bool mBlink;
-        bool mUnderline;
-
-        QPair<ColorAttr, uint8_t> foreground, background;
-
         QString bufferLeft, bufferRight;
+
+        ColorFormatter formatter;
 
         friend inline StyledString& operator+(const char* s, StyledString& styledString);
         friend inline StyledString& operator+(const QString& s, StyledString& styledString);

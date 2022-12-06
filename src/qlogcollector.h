@@ -12,6 +12,12 @@ namespace logcollector {
     public:
         static QLogCollector &init();
 
+        static void registerLinuxOutput();
+
+        static void registerWin32ConsoleAppOutput();
+
+        static void registerWin32DebugConsoleOutput();
+
         void registerLog();
 
         void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
