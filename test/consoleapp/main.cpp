@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication a(argc, argv);
 
     logcollector::QLogCollector::init().registerLog();
-    logcollector::QLogCollector::registerWin32ConsoleAppOutput();
+    logcollector::QLogCollector::registerStandardOutput();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();

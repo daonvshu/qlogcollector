@@ -83,7 +83,7 @@ namespace logcollector {
         print(" (");
         currentColorFormatter = ColorFormatter().setForeground(ColorAttr::Blue).underline();
 
-        QString line = "./test/" + message.fileName() + ":" + QString::number(message.codeLine());
+        QString line = message.fileName() + ":" + QString::number(message.codeLine());
         print(line);
         endStyle();
         print(")");
@@ -122,9 +122,7 @@ namespace logcollector {
             std::cout << log.toStdString();
         } else if (outputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
 #if defined Q_CC_MSVC
-            if (!currentColorFormatter.isInvalid()) {
-                //OutputDebugString(reinterpret_cast<LPCSTR>(currentColorFormatter.toStdColorCode().utf16()));
-            }
+            //ignore unsupported color style
             OutputDebugString(reinterpret_cast<const wchar_t*>(log.utf16()));
 #endif
         } else {
@@ -160,12 +158,9 @@ namespace logcollector {
 #if defined Q_CC_MSVC
             SetConsoleTextAttribute(consoleHandle, wOldColorAttrs);
 #endif
-        } else if (outputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
-#if defined Q_CC_MSVC
-            //OutputDebugString("\033[0m");
-#endif
-        } else {
+        } else if (outputTarget == ConsoleOutputTarget::TARGET_STANDARD_OUTPUT) {
             std::cout << "\033[0m";
         }
+        //ignore unsupported color style for TARGET_WIN32_DEBUG_CONSOLE
     }
 }

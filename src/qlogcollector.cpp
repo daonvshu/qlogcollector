@@ -8,6 +8,7 @@
 #include <qfileinfo.h>
 #include <qthread.h>
 #include <qdatetime.h>
+#include <qdir.h>
 
 namespace logcollector {
 
@@ -22,7 +23,7 @@ namespace logcollector {
         return instance();
     }
 
-    void QLogCollector::registerLinuxOutput() {
+    void QLogCollector::registerStandardOutput() {
         Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_STANDARD_OUTPUT);
     }
 
@@ -43,8 +44,8 @@ namespace logcollector {
         message.timePoint = QDateTime::currentMSecsSinceEpoch();
         message.category = context.category;
 
-        QFileInfo info(context.file);
-        message.fileName = info.fileName();
+        static QDir dir(ROOT_PROJECT_PATH);
+        message.fileName = "./" + dir.relativeFilePath(context.file);
         message.codeLine = context.line;
 
         auto currentThreadId = QThread::currentThreadId();

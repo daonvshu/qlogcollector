@@ -12,7 +12,7 @@ namespace logcollector {
     public:
         static QLogCollector &init();
 
-        static void registerLinuxOutput();
+        static void registerStandardOutput();
 
         static void registerWin32ConsoleAppOutput();
 

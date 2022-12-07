@@ -23,6 +23,8 @@ if (MSVC)
     add_definitions(-D_UNICODE)
 endif()
 
+add_compile_definitions(ROOT_PROJECT_PATH="${CMAKE_SOURCE_DIR}")
+
 add_library(${PROJECT_NAME}
             qlogcollector.h
             qlogcollector.cpp
