@@ -90,7 +90,7 @@ namespace logcollector {
 
         if (outputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
 #if defined Q_CC_MSVC
-            OutputDebugString("\n");
+            OutputDebugString(L"\n");
 #endif
         } else {
             std::cout << std::endl;
@@ -125,7 +125,7 @@ namespace logcollector {
             if (!currentColorFormatter.isInvalid()) {
                 //OutputDebugString(reinterpret_cast<LPCSTR>(currentColorFormatter.toStdColorCode().utf16()));
             }
-            OutputDebugString(log.toUtf8().toStdString().c_str());
+            OutputDebugString(reinterpret_cast<const wchar_t*>(log.utf16()));
 #endif
         } else {
             if (!currentColorFormatter.isInvalid()) {

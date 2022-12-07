@@ -33,6 +33,7 @@ namespace logcollector {
         WORD wOldColorAttrs;
         HANDLE consoleHandle;
 #endif
+        friend class StyledString;
 
     private:
         void print(const QString& log);

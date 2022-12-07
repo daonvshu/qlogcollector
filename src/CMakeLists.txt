@@ -19,6 +19,8 @@ include(${UNISHOX2_PATH}/cmake/compilerFlags.cmake REQUIRED)
 
 if (MSVC)
     add_definitions(-wd4267)
+    add_definitions(-DUNICODE)
+    add_definitions(-D_UNICODE)
 endif()
 
 add_library(${PROJECT_NAME}

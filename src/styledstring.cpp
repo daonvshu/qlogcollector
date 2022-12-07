@@ -1,5 +1,7 @@
 #include "styledstring.h"
 
+#include "console.h"
+
 namespace logcollector {
     StyledString::StyledString(QString log, bool blink, bool underline)
         : mLog(std::move(log))
@@ -99,9 +101,13 @@ namespace logcollector {
             return styled;
         }
 
-        styled += formatter.toStdColorCode();
-        styled += mLog;
-        styled += "\033[0m";
+        if (Console::outputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+            styled += formatter.toStdColorCode();
+            styled += mLog;
+            styled += "\033[0m";
+        } else {
+            styled += mLog;
+        }
 
         if (!bufferRight.isEmpty()) {
             styled += " " + bufferRight;
