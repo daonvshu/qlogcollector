@@ -1,4 +1,4 @@
-#include "printtest.h"
+﻿#include "printtest.h"
 
 #include <qdebug.h>
 #include <qloggingcategory.h>
@@ -34,4 +34,10 @@ void PrintTest::printWithColor() {
         qDebug() << "post a" + styled("color string", true, true).r().yb(1) + "log";
         qCDebug(mainLog) << "post a" << styled("color string").b(1).cb() << "log";
     });
+}
+
+void PrintTest::longText() {
+    qDebug() << "this is a long" << styled("color string").b() << "text, contain more strings and" <<
+        QStringLiteral("这是一个中文长字符串， 带有") << styled(QStringLiteral("部分有颜色")).c() << QStringLiteral("的字符串。") <<
+        QString("post a normal long text log").repeated(10);
 }

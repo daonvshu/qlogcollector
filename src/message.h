@@ -4,7 +4,6 @@
 
 namespace logcollector {
 
-    using namespace QJsonUtil;
     struct Message : public JsonDumpInterface {
         ConfigKey<qint64> timePoint{"a"};
         ConfigKey<QString> category{"b"};

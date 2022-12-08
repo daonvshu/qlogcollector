@@ -13,38 +13,38 @@ namespace logcollector {
 
     void Console::printMessage(Message &message) {
         auto dateTime = QDateTime::fromMSecsSinceEpoch(message.timePoint());
-        print(dateTime.toString("HH:mm:ss.zzz   "));
+        print(dateTime.toString("HH:mm:ss.zzz  "));
 
-        if (!message.threadName().isEmpty()) {
-            print(message.threadName().leftJustified(14, ' ', true));
-        } else {
-            print(QString::number(message.threadId()).leftJustified(14, ' ', true));
+        auto threadName = message.threadName();
+        if (threadName.isEmpty()) {
+            threadName = QString::number(message.threadId()).right(6);
         }
-        print("   ");
+        print(threadName.leftJustified(8, ' ', true));
+        print("  ");
 
         if (message.category() == "default") {
-            print(QString("<no-category>").leftJustified(24, ' ', true));
+            print(QString("<no-category>").leftJustified(14, ' ', true));
         } else {
-            print(message.category().leftJustified(24, ' ', true));
+            print(message.category().leftJustified(14, ' ', true));
         }
-        print("   ");
+        print("  ");
 
         auto msgType = (QtMsgType)message.level();
         beginMessageType(msgType);
 
         switch (msgType) {
             case QtDebugMsg:
-                print(" D ");
+                print(" D-> ");
                 break;
             case QtWarningMsg:
-                print(" W ");
+                print(" W-> ");
                 break;
             case QtInfoMsg:
-                print(" I ");
+                print(" I-> ");
                 break;
             case QtCriticalMsg:
             case QtFatalMsg:
-                print(" E ");
+                print(" E-> ");
                 break;
         }
         endStyle();
@@ -134,20 +134,20 @@ namespace logcollector {
     }
 
     void Console::beginMessageType(const QtMsgType& type) {
-        currentColorFormatter = ColorFormatter().setForeground(ColorAttr::White, 1);
+        currentColorFormatter = ColorFormatter();
         switch (type) {
             case QtDebugMsg:
-                currentColorFormatter.setBackground(ColorAttr::Green);
+                currentColorFormatter.setForeground(ColorAttr::Green, 1);
                 break;
             case QtInfoMsg:
-                currentColorFormatter.setBackground(ColorAttr::Blue);
+                currentColorFormatter.setForeground(ColorAttr::Blue, 1);
                 break;
             case QtWarningMsg:
-                currentColorFormatter.setBackground(ColorAttr::Yellow);
+                currentColorFormatter.setForeground(ColorAttr::Yellow, 1);
                 break;
             case QtCriticalMsg:
             case QtFatalMsg:
-                currentColorFormatter.setBackground(ColorAttr::Red);
+                currentColorFormatter.setForeground(ColorAttr::Red, 1);
                 break;
         }
     }

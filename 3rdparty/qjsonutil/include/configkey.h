@@ -5,7 +5,7 @@
 #include <qjsondocument.h>
 #include <qvariant.h>
 
-namespace QJsonUtil {
+namespace logcollector {
 
     struct JsonReadInterface {
         //读取json的key

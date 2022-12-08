@@ -7,4 +7,6 @@ public:
     static void printInThread();
 
     static void printWithColor();
+
+    static void longText();
 };
