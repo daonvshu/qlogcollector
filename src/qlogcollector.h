@@ -3,6 +3,8 @@
 #include <qobject.h>
 #include <qhash.h>
 
+#include "consolestyle.h"
+
 namespace logcollector {
 
     class Sender;
@@ -11,12 +13,6 @@ namespace logcollector {
 
     public:
         static QLogCollector &init();
-
-        static void registerStandardOutput();
-
-        static void registerWin32ConsoleAppOutput();
-
-        static void registerWin32DebugConsoleOutput();
 
         void registerLog();
 

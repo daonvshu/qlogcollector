@@ -1,6 +1,6 @@
 #include "styledstring.h"
 
-#include "console.h"
+#include "consolestyle.h"
 
 namespace logcollector {
     StyledString::StyledString(QString log, bool blink, bool underline)
@@ -101,7 +101,7 @@ namespace logcollector {
             return styled;
         }
 
-        if (Console::outputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+        if (styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             styled += formatter.toStdColorCode();
             styled += mLog;
             styled += "\033[0m";

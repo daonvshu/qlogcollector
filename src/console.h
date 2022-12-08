@@ -5,14 +5,9 @@
 
 #include "message.h"
 #include "colorformatter.h"
+#include "consolestyle.h"
 
 namespace logcollector {
-
-    enum class ConsoleOutputTarget {
-        TARGET_STANDARD_OUTPUT,
-        TARGET_WIN32_CONSOLE_APP,
-        TARGET_WIN32_DEBUG_CONSOLE,
-    };
 
     class Console {
     public:
@@ -20,20 +15,15 @@ namespace logcollector {
 
         static Console &instance();
 
-        static void resetConsoleOutputTarget(const ConsoleOutputTarget &target);
-
         void printMessage(Message &message);
 
     private:
-        static ConsoleOutputTarget outputTarget;
-
         ColorFormatter currentColorFormatter;
 
 #if defined Q_CC_MSVC
         WORD wOldColorAttrs;
         HANDLE consoleHandle;
 #endif
-        friend class StyledString;
 
     private:
         void print(const QString& log);
@@ -41,4 +31,13 @@ namespace logcollector {
         void endStyle();
     };
 
+    struct ConsoleLogPart {
+        QString part;
+        bool isStyleCode;
+        bool nextLine = false;
+
+        int length() const {
+            return part.length();
+        }
+    };
 }

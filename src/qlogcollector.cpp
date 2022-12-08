@@ -10,6 +10,8 @@
 #include <qdatetime.h>
 #include <qdir.h>
 
+#include "consolestyle.h"
+
 namespace logcollector {
 
     void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
@@ -23,18 +25,6 @@ namespace logcollector {
         return instance();
     }
 
-    void QLogCollector::registerStandardOutput() {
-        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_STANDARD_OUTPUT);
-    }
-
-    void QLogCollector::registerWin32ConsoleAppOutput() {
-        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP);
-    }
-
-    void QLogCollector::registerWin32DebugConsoleOutput() {
-        Console::resetConsoleOutputTarget(ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE);
-    }
-
     void QLogCollector::registerLog() {
         qInstallMessageHandler(customMessageHandler);
     }
@@ -44,8 +34,12 @@ namespace logcollector {
         message.timePoint = QDateTime::currentMSecsSinceEpoch();
         message.category = context.category;
 
-        static QDir dir(ROOT_PROJECT_PATH);
-        message.fileName = "./" + dir.relativeFilePath(context.file);
+        if (styleConfig.mSimpleCodeLine) {
+            message.fileName = QFileInfo(context.file).fileName();
+        } else {
+            static QDir dir(ROOT_PROJECT_PATH);
+            message.fileName = "./" + dir.relativeFilePath(context.file);
+        }
         message.codeLine = context.line;
 
         auto currentThreadId = QThread::currentThreadId();

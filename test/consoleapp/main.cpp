@@ -9,7 +9,10 @@ int main(int argc, char* argv[]) {
     QCoreApplication a(argc, argv);
 
     logcollector::QLogCollector::init().registerLog();
-    logcollector::QLogCollector::registerStandardOutput();
+    logcollector::styleConfig
+        .target(logcollector::ConsoleOutputTarget::TARGET_STANDARD_OUTPUT)
+        .simpleCodeLine()
+        .lineWidth(66);
 
     PrintTest::debugLevel();
     PrintTest::printInThread();
