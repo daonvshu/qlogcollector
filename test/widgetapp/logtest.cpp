@@ -10,6 +10,7 @@ LogTest::LogTest(QWidget *parent)
     on_post_main_thread_clicked();
     on_post_work_thread_clicked();
     on_post_styled_string_clicked();
+    on_post_long_string_clicked();
 }
 
 void LogTest::on_post_main_thread_clicked() {
@@ -22,4 +23,8 @@ void LogTest::on_post_work_thread_clicked() {
 
 void LogTest::on_post_styled_string_clicked() {
     PrintTest::printWithColor();
+}
+
+void LogTest::on_post_long_string_clicked() {
+    PrintTest::longText();
 }

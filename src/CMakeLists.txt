@@ -34,6 +34,8 @@ add_library(${PROJECT_NAME}
             colorformatter.cpp
             console.h
             console.cpp
+            consolestyle.h
+            consolestyle.cpp
             sender.h
             sender.cpp
             styledstring.h

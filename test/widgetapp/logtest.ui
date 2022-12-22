@@ -52,6 +52,19 @@
     <string>styled string</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="post_long_string">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>140</y>
+     <width>161</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>long string</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

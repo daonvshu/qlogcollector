@@ -15,6 +15,7 @@ HEADERS += \
 
 include($$PWD/../../src/src.pri)
 INCLUDEPATH += ../../src
+DEFINES += ROOT_PROJECT_PATH=\\\"$$PWD/../../\\\"
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

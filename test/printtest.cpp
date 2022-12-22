@@ -38,7 +38,7 @@ void PrintTest::printWithColor() {
 
 void PrintTest::longText() {
     qDebug() << "this is a long" << styled("color string").b() << "text, contain more strings and" <<
-        QStringLiteral("这是一个中文长字符串， 带有") << styled(QStringLiteral("部分有颜色")).c() << QStringLiteral("的字符串。") <<
+        QStringLiteral("这是一个中文长字符串， 带有") << styled(QStringLiteral("部分有颜色！")).c() << QStringLiteral("的字符串。") <<
         QString("post a normal long text log").repeated(10);
 
     qDebug() << "fnasdjkfhbashjdfbasdfasbhjfdgahjkasdnfkasdgfbilaydfnasdjkfhbashjdfbasdfasbhjfdgahjkasdn"

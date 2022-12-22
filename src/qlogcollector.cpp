@@ -34,7 +34,7 @@ namespace logcollector {
         message.timePoint = QDateTime::currentMSecsSinceEpoch();
         message.category = context.category;
 
-        if (styleConfig.mSimpleCodeLine) {
+        if (styleConfig.mSimpleCodeLine && styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             message.fileName = QFileInfo(context.file).fileName();
         } else {
             static QDir dir(ROOT_PROJECT_PATH);

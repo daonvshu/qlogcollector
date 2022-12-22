@@ -4,15 +4,21 @@
 #include "../printtest.h"
 #include "qlogcollector.h"
 
+#include <qdebug.h>
+
 int main(int argc, char* argv[]) {
 
     QCoreApplication a(argc, argv);
-
     logcollector::QLogCollector::init().registerLog();
     logcollector::styleConfig
-        .target(logcollector::ConsoleOutputTarget::TARGET_STANDARD_OUTPUT)
-        .simpleCodeLine()
-        .lineWidth(66);
+        .consoleApp()
+        .ide_clion(false)
+        //.ide_vs()
+        //.ide_vscode()
+        //.ide_qtcreator()
+        .wordWrap(90)
+        //.simpleCodeLine()
+    ;
 
     PrintTest::debugLevel();
     PrintTest::printInThread();

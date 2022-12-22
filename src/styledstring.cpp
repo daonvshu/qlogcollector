@@ -14,7 +14,7 @@ namespace logcollector {
         }
     }
 
-    StyledString &logcollector::StyledString::b(uint8_t lighter) {
+    StyledString &StyledString::b(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Blue, lighter);
         return *this;
     }
@@ -24,7 +24,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::g(uint8_t lighter) {
+    StyledString &StyledString::g(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Green, lighter);
         return *this;
     }
@@ -34,7 +34,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::c(uint8_t lighter) {
+    StyledString &StyledString::c(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Cyan, lighter);
         return *this;
     }
@@ -44,7 +44,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::r(uint8_t lighter) {
+    StyledString &StyledString::r(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Red, lighter);
         return *this;
     }
@@ -54,7 +54,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::p(uint8_t lighter) {
+    StyledString &StyledString::p(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Purple, lighter);
         return *this;
     }
@@ -64,7 +64,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::y(uint8_t lighter) {
+    StyledString &StyledString::y(uint8_t lighter) {
         formatter.setForeground(ColorAttr::Yellow, lighter);
         return *this;
     }
@@ -74,7 +74,7 @@ namespace logcollector {
         return *this;
     }
 
-    StyledString &logcollector::StyledString::w(uint8_t lighter) {
+    StyledString &StyledString::w(uint8_t lighter) {
         formatter.setForeground(ColorAttr::White, lighter);
         return *this;
     }

@@ -14,6 +14,16 @@ namespace logcollector {
     }
 
     void Console::printMessage(Message &message) {
+
+        if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+            //add extra code line to navigate to source code line
+            QString codeLine = message.fileName() + "(" + QString::number(message.codeLine()) + "):\n";
+#if defined Q_CC_MSVC
+            //ignore unsupported color style
+            OutputDebugString(reinterpret_cast<const wchar_t*>(codeLine.utf16()));
+#endif
+        }
+
         auto dateTime = QDateTime::fromMSecsSinceEpoch(message.timePoint());
         print(dateTime.toString("HH:mm:ss.zzz  "));
 
@@ -62,7 +72,6 @@ namespace logcollector {
             print(codeLine);
             endStyle();
         };
-
 
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
         auto content = message.log();
@@ -168,21 +177,26 @@ namespace logcollector {
                 }
             }
 
-            if (!wordsWrapMode) {
-                codeLinePrint();
-            } else {
-                int spareLength = styleConfig.mLogLineWidth - (lastLogLength + codeLine.length() + 1);
-                QString space;
-                if (spareLength >= 0) {
-                    space = QString(' ').repeated(spareLength);
+            if (styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+                if (!wordsWrapMode) {
+                    codeLinePrint();
                 } else {
-                    space = logHeaderPlaceholder + QString(' ').repeated(styleConfig.mLogLineWidth - codeLine.length());
+                    int spareLength = styleConfig.mLogLineWidth - (lastLogLength + codeLine.length() + 1);
+                    QString space;
+                    if (spareLength >= 0) {
+                        space = QString(' ').repeated(spareLength);
+                    } else {
+                        space = logHeaderPlaceholder +
+                                QString(' ').repeated(styleConfig.mLogLineWidth - codeLine.length());
+                    }
+                    codeLinePrint(space);
                 }
-                codeLinePrint(space);
             }
         } else {
             print(content);
-            codeLinePrint();
+            if (styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+                codeLinePrint();
+            }
         }
 
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {

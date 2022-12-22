@@ -6,6 +6,8 @@ HEADERS += \
     $$PWD/sender.h \
     $$PWD/styledstring.h \
     $$PWD/qlogcollector.h \
+    $$PWD/colorformatter.h \
+    $$PWD/consolestyle.h \
     $$PWD/../3rdparty/qjsonutil/include/configkey.h \
     $$PWD/../3rdparty/unishox2/unishox2.h
 
@@ -15,6 +17,8 @@ SOURCES += \
     $$PWD/sender.cpp \
     $$PWD/styledstring.cpp \
     $$PWD/qlogcollector.cpp \
+    $$PWD/colorformatter.cpp \
+    $$PWD/consolestyle.cpp \
     $$PWD/../3rdparty/unishox2/unishox2.c
 
 INCLUDEPATH += $$PWD/../3rdparty/unishox2

@@ -10,31 +10,31 @@ namespace logcollector {
 
     class ConsoleOutputStyleConfig {
     public:
-        explicit ConsoleOutputStyleConfig()
-            : mOutputTarget(ConsoleOutputTarget::TARGET_STANDARD_OUTPUT)
-            , mSimpleCodeLine(false)
-            , mLogLineWidth(0)
-        {}
+        explicit ConsoleOutputStyleConfig();
 
-        ConsoleOutputStyleConfig& target(const ConsoleOutputTarget& outputTarget) {
-            mOutputTarget = outputTarget;
-            return *this;
-        }
+        ConsoleOutputStyleConfig& target(const ConsoleOutputTarget& outputTarget);
 
-        ConsoleOutputStyleConfig& simpleCodeLine() {
-            mSimpleCodeLine = true;
-            return *this;
-        }
+        ConsoleOutputStyleConfig& simpleCodeLine();
 
-        ConsoleOutputStyleConfig& lineWidth(int width) {
-            mLogLineWidth = qMax(60, width);
-            return *this;
-        }
+        ConsoleOutputStyleConfig& wordWrap(int lineWidth);
+
+        ConsoleOutputStyleConfig& consoleApp();
+
+        ConsoleOutputStyleConfig& windowApp();
+
+        ConsoleOutputStyleConfig& ide_clion(bool runWithPty = true);
+
+        ConsoleOutputStyleConfig& ide_vs();
+
+        ConsoleOutputStyleConfig& ide_vscode();
+
+        ConsoleOutputStyleConfig& ide_qtcreator();
 
     private:
         ConsoleOutputTarget mOutputTarget;
         bool mSimpleCodeLine;
         int mLogLineWidth;
+        bool win32App;
 
         friend class Console;
         friend class StyledString;
