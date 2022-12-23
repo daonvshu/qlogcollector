@@ -17,8 +17,10 @@ include_directories(${UNISHOX2_PATH})
 
 include(${UNISHOX2_PATH}/cmake/compilerFlags.cmake REQUIRED)
 
-if (MSVC)
-    add_definitions(-wd4267)
+if (WIN32)
+    if (MSVC)
+        add_definitions(-wd4267)
+    endif()
     add_definitions(-DUNICODE)
     add_definitions(-D_UNICODE)
 endif()

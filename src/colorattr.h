@@ -2,7 +2,7 @@
 
 #include <qobject.h>
 
-#ifdef Q_CC_MSVC
+#ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
 
@@ -10,7 +10,7 @@ namespace logcollector {
 
     //win32 console color attribute
     enum class Win32ColorAttr {
-#ifdef Q_CC_MSVC
+#ifdef Q_OS_WIN
         WR = FOREGROUND_RED,
         WG = FOREGROUND_GREEN,
         WB = FOREGROUND_BLUE,

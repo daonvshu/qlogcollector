@@ -20,7 +20,7 @@ namespace logcollector {
     private:
         ColorFormatter currentColorFormatter;
 
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
         WORD wOldColorAttrs;
         HANDLE consoleHandle;
 #endif
@@ -34,7 +34,11 @@ namespace logcollector {
     struct ConsoleLogPart {
         QString part;
         bool isStyleCode;
-        bool nextLine = false;
+        bool nextLine;
+
+        ConsoleLogPart(const QString& part, bool isStyleCode, bool nextLine = false)
+            : part(part), isStyleCode(isStyleCode), nextLine(nextLine)
+        {}
 
         int length() const {
             return part.length();

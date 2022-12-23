@@ -1,5 +1,7 @@
 #include "colorformatter.h"
 
+#include "consolestyle.h"
+
 namespace logcollector {
 
     ColorFormatter::ColorFormatter()
@@ -41,20 +43,22 @@ namespace logcollector {
             styled += ";";
         }
         if (mUnderline) {
-            styled += QString::number((int)StdColorAttr::LU);
-            styled += ";";
+            if (styleConfig.mUnderlineEnabled) {
+                styled += QString::number((int) StdColorAttr::LU);
+                styled += ";";
+            }
         }
 
         if (foreground.first != ColorAttr::Unset) {
             int v = 30 + (int)foreground.first;
-            if (foreground.second) {
+            if (foreground.second && styleConfig.mLighterColorEnabled) {
                 v += (int)StdColorAttr::LL;
             }
             styled += QString::number(v) + ";";
         }
         if (background.first != ColorAttr::Unset) {
             int v = 30 + (int)background.first + (int)StdColorAttr::LBK;
-            if (background.second) {
+            if (background.second && styleConfig.mLighterColorEnabled) {
                 v += (int)StdColorAttr::LL;
             }
             styled += QString::number(v) + ";";
@@ -70,7 +74,9 @@ namespace logcollector {
             //unsupported operator, ignore
         }
         if (mUnderline) {
-            styled |= (int)Win32ColorAttr::WU;
+            if (styleConfig.mUnderlineEnabled) {
+                styled |= (int) Win32ColorAttr::WU;
+            }
         }
 
         const auto colorAttrToCode = [] (const ColorAttr& attr) {
@@ -97,7 +103,7 @@ namespace logcollector {
 
         if (foreground.first != ColorAttr::Unset) {
             int code = colorAttrToCode(foreground.first);
-            if (foreground.second) {
+            if (foreground.second && styleConfig.mLighterColorEnabled) {
                 code |= (int)Win32ColorAttr::WL;
             }
             styled |= code;
@@ -105,7 +111,7 @@ namespace logcollector {
 
         if (background.first != ColorAttr::Unset) {
             int code = colorAttrToCode(background.first);
-            if (background.second) {
+            if (background.second && styleConfig.mLighterColorEnabled) {
                 code |= (int)Win32ColorAttr::WL;
             }
             code = code << (int)Win32ColorAttr::WBK;

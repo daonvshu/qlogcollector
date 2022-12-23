@@ -18,6 +18,12 @@ namespace logcollector {
 
         ConsoleOutputStyleConfig& wordWrap(int lineWidth);
 
+        ConsoleOutputStyleConfig& systemCodePage();
+
+        ConsoleOutputStyleConfig& disableLighterStyle();
+
+        ConsoleOutputStyleConfig& disableUnderlineStyle();
+
         ConsoleOutputStyleConfig& consoleApp();
 
         ConsoleOutputStyleConfig& windowApp();
@@ -35,10 +41,15 @@ namespace logcollector {
         bool mSimpleCodeLine;
         int mLogLineWidth;
         bool win32App;
+        bool useSystemCodePage;
+        bool mLighterColorEnabled;
+        bool mUnderlineEnabled;
+        bool win32DebugConsoleWithStdColorStyle;
 
         friend class Console;
         friend class StyledString;
         friend class QLogCollector;
+        friend class ColorFormatter;
     };
 
     extern ConsoleOutputStyleConfig styleConfig;

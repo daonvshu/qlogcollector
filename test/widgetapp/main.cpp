@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     logcollector::QLogCollector::init().registerLog();
     logcollector::styleConfig
         .windowApp()
-        .ide_clion(false)
+        .ide_clion(true)
         //.ide_vs()
         //.ide_vscode()
         //.ide_qtcreator()

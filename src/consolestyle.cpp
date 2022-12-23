@@ -2,7 +2,7 @@
 
 #include <qglobal.h>
 
-#ifdef Q_CC_MSVC
+#ifdef Q_OS_WIN
 #include <intrin.h>
 #endif
 
@@ -13,6 +13,10 @@ namespace logcollector {
             , mSimpleCodeLine(false)
             , mLogLineWidth(0)
             , win32App(true)
+            , useSystemCodePage(false)
+            , mLighterColorEnabled(true)
+            , mUnderlineEnabled(true)
+            , win32DebugConsoleWithStdColorStyle(false)
     {}
 
     ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::target(const ConsoleOutputTarget &outputTarget) {
@@ -25,6 +29,16 @@ namespace logcollector {
         return *this;
     }
 
+    ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::disableLighterStyle() {
+        mLighterColorEnabled = false;
+        return *this;
+    }
+
+    ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::disableUnderlineStyle() {
+        mUnderlineEnabled = false;
+        return *this;
+    }
+
     ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::wordWrap(int lineWidth) {
         Q_ASSERT(lineWidth > 0);
         if (mLogLineWidth == 0) {
@@ -32,6 +46,11 @@ namespace logcollector {
         } else {
             mLogLineWidth = qMin(qMax(60, lineWidth), mLogLineWidth);
         }
+        return *this;
+    }
+
+    ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::systemCodePage() {
+        useSystemCodePage = true;
         return *this;
     }
 
@@ -46,7 +65,7 @@ namespace logcollector {
     }
 
     static bool checkCurrentDebugging() {
-#ifdef Q_CC_MSVC
+#ifdef Q_OS_WIN
 #ifdef _M_X64
         void *PEB = (void*)(__readgsqword(0x60));
 #elif _M_IX86
@@ -64,7 +83,7 @@ namespace logcollector {
                 if (checkCurrentDebugging()) {
                     mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
                 }
-                //cannot print in run debug mode, any print invisible
+                //cannot print in run debug mode, any print invisible, consider disable 'run with pty'
             } else {
                 mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
             }
@@ -74,6 +93,7 @@ namespace logcollector {
                     mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
                 } else {
                     mOutputTarget = ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP;
+                    systemCodePage();
                 }
             } else {
                 mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
@@ -81,10 +101,12 @@ namespace logcollector {
         }
         if (runWithPty) {
             //run with pty mode limit column width 120 characters, this is the existing problems
-            if (mLogLineWidth == 0) {
-                mLogLineWidth = 72;
-            } else {
-                mLogLineWidth = qMin(mLogLineWidth, 72);
+            if (!checkCurrentDebugging()) {
+                if (mLogLineWidth == 0) {
+                    mLogLineWidth = 72;
+                } else {
+                    mLogLineWidth = qMin(mLogLineWidth, 72);
+                }
             }
         }
         return *this;
@@ -96,6 +118,8 @@ namespace logcollector {
             mOutputTarget = ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE;
         } else {
             mOutputTarget = ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP;
+            systemCodePage();
+            disableUnderlineStyle();
         }
         return *this;
     }
@@ -108,15 +132,24 @@ namespace logcollector {
         }
         //supports standard output for any mode
         mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
+        systemCodePage();
         return *this;
     }
 
     ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::ide_qtcreator() {
         if (checkCurrentDebugging()) {
+#ifdef Q_CC_MSVC
+            //can be print only in this mode
             mOutputTarget = ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE;
+            win32DebugConsoleWithStdColorStyle = true;
+#else
+            mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
+#endif
         } else {
             mOutputTarget = ConsoleOutputTarget::TARGET_STANDARD_OUTPUT;
         }
+        systemCodePage();
+        disableLighterStyle();
         return *this;
     }
 }

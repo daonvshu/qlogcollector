@@ -101,12 +101,12 @@ namespace logcollector {
             return styled;
         }
 
-        if (styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
+        if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE && !styleConfig.win32DebugConsoleWithStdColorStyle) {
+            styled += mLog;
+        } else {
             styled += formatter.toStdColorCode();
             styled += mLog;
             styled += "\033[0m";
-        } else {
-            styled += mLog;
         }
 
         if (!bufferRight.isEmpty()) {

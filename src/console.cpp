@@ -18,7 +18,7 @@ namespace logcollector {
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             //add extra code line to navigate to source code line
             QString codeLine = message.fileName() + "(" + QString::number(message.codeLine()) + "):\n";
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
             //ignore unsupported color style
             OutputDebugString(reinterpret_cast<const wchar_t*>(codeLine.utf16()));
 #endif
@@ -83,14 +83,14 @@ namespace logcollector {
             //split log text and color style code
             while ((pos = rx.indexIn(content, pos)) != -1) {
                 //previous string
-                logPart.append({content.mid(lastPos, pos - lastPos), false});
+                logPart.append(ConsoleLogPart(content.mid(lastPos, pos - lastPos), false));
                 //linux style code
-                logPart.append({rx.cap(1), true});
+                logPart.append(ConsoleLogPart(rx.cap(1), true));
                 //process next
                 pos += rx.matchedLength();
                 lastPos = pos;
             }
-            logPart.append({content.mid(lastPos), false});
+            logPart.append(ConsoleLogPart(content.mid(lastPos), false));
 
             //log width limit
             if (wordsWrapMode) {
@@ -142,7 +142,7 @@ namespace logcollector {
                         auto currentLogText = logPart.at(logPartIndex).part;
                         logPart[logPartIndex].part = currentLogText.mid(0, index);
                         //create new log part
-                        logPart.insert(++logPartIndex, {currentLogText.mid(index), false, true});
+                        logPart.insert(++logPartIndex, ConsoleLogPart(currentLogText.mid(index), false, true));
                         count = 0;
                         continue;
                     }
@@ -200,7 +200,7 @@ namespace logcollector {
         }
 
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
             OutputDebugString(L"\n");
 #endif
         } else {
@@ -209,7 +209,7 @@ namespace logcollector {
     }
 
     Console::Console() {
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
         CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
         consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
         GetConsoleScreenBufferInfo(consoleHandle, &bufferInfo);
@@ -223,13 +223,23 @@ namespace logcollector {
         }
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP) {
             if (!currentColorFormatter.isInvalid()) {
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
                 SetConsoleTextAttribute(consoleHandle, currentColorFormatter.toWin32ColorCode());
 #endif
             }
-            std::cout << log.toStdString();
+            if (styleConfig.useSystemCodePage) {
+                std::cout << log.toLocal8Bit().data();
+            } else {
+                std::cout << log.toStdString();
+            }
         } else if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
+            if (styleConfig.win32DebugConsoleWithStdColorStyle) { //force use std color style
+                if (!currentColorFormatter.isInvalid()) {
+                    auto styleCode = currentColorFormatter.toStdColorCode();
+                    OutputDebugString(reinterpret_cast<const wchar_t*>(styleCode.utf16()));
+                }
+            }
             //ignore unsupported color style
             OutputDebugString(reinterpret_cast<const wchar_t*>(log.utf16()));
 #endif
@@ -237,7 +247,11 @@ namespace logcollector {
             if (!currentColorFormatter.isInvalid()) {
                 std::cout << currentColorFormatter.toStdColorCode().toStdString();
             }
-            std::cout << log.toStdString();
+            if (styleConfig.useSystemCodePage) {
+                std::cout << log.toLocal8Bit().data();
+            } else {
+                std::cout << log.toStdString();
+            }
         }
     }
 
@@ -263,11 +277,17 @@ namespace logcollector {
     void Console::endStyle() {
         currentColorFormatter = ColorFormatter();
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP) {
-#if defined Q_CC_MSVC
+#if defined Q_OS_WIN
             SetConsoleTextAttribute(consoleHandle, wOldColorAttrs);
 #endif
         } else if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_STANDARD_OUTPUT) {
             std::cout << "\033[0m";
+        } else {
+#if defined Q_OS_WIN
+            if (styleConfig.win32DebugConsoleWithStdColorStyle) { //force use std color style
+                OutputDebugString(L"\033[0m");
+            }
+#endif
         }
         //ignore unsupported color style for TARGET_WIN32_DEBUG_CONSOLE
     }
