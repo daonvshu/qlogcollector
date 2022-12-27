@@ -10,6 +10,8 @@ int main(int argc, char* argv[]) {
 
     QCoreApplication a(argc, argv);
     logcollector::QLogCollector::init().registerLog();
+
+#ifdef Q_OS_WIN
     logcollector::styleConfig
         .consoleApp()
         .ide_clion(true)
@@ -19,6 +21,12 @@ int main(int argc, char* argv[]) {
         .wordWrap(90)
         //.simpleCodeLine()
     ;
+#elif defined Q_OS_LINUX
+    logcollector::styleConfig
+        //.consoleApp()
+        //.ide_qtcreator()
+        .wordWrap(90)
+#endif
 
     PrintTest::debugLevel();
     PrintTest::printInThread();
