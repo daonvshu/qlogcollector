@@ -8,12 +8,22 @@ namespace logcollector {
 
     ConsoleOutputStyleConfig styleConfig;
 
-    Console &Console::instance() {
-        static Console console;
-        return console;
-    }
+#if defined Q_OS_WIN
+    WORD wOldColorAttrs;
+    HANDLE consoleHandle;
+
+    int rst = [] {
+        CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+        consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        GetConsoleScreenBufferInfo(consoleHandle, &bufferInfo);
+        wOldColorAttrs = bufferInfo.wAttributes;
+        return 1;
+    } ();
+#endif
 
     void Console::printMessage(Message &message) {
+
+        ColorFormatter currentColorFormatter;
 
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             //add extra code line to navigate to source code line
@@ -25,52 +35,54 @@ namespace logcollector {
         }
 
         auto dateTime = QDateTime::fromMSecsSinceEpoch(message.timePoint());
-        print(dateTime.toString("HH:mm:ss.zzz  "));
+        print(currentColorFormatter, dateTime.toString("HH:mm:ss.zzz  "));
 
         auto threadName = message.threadName();
         if (threadName.isEmpty()) {
             threadName = QString::number(message.threadId()).right(6);
         }
-        print(threadName.leftJustified(8, ' ', true));
-        print("  ");
+        print(currentColorFormatter, threadName.leftJustified(8, ' ', true));
+        print(currentColorFormatter, "  ");
 
         if (message.category() == "default") {
-            print(QString("<no-category>").leftJustified(14, ' ', true));
+            print(currentColorFormatter, QString("<no-category>").leftJustified(14, ' ', true));
         } else {
-            print(message.category().leftJustified(14, ' ', true));
+            print(currentColorFormatter, message.category().leftJustified(14, ' ', true));
         }
-        print("  ");
+        print(currentColorFormatter, "  ");
 
         auto msgType = (QtMsgType)message.level();
-        beginMessageType(msgType);
+        currentColorFormatter = beginMessageType(msgType);
 
         switch (msgType) {
             case QtDebugMsg:
-                print(" D-> ");
+                print(currentColorFormatter, " D-> ");
                 break;
             case QtWarningMsg:
-                print(" W-> ");
+                print(currentColorFormatter, " W-> ");
                 break;
             case QtInfoMsg:
-                print(" I-> ");
+                print(currentColorFormatter, " I-> ");
                 break;
             case QtCriticalMsg:
             case QtFatalMsg:
-                print(" E-> ");
+                print(currentColorFormatter, " E-> ");
                 break;
         }
         endStyle();
-        print(" ");
+        currentColorFormatter = ColorFormatter();
+        print(currentColorFormatter, " ");
 
         const int logHeaderUsedCharSize = 46;
         const auto logHeaderPlaceholder = "\n" + QString(" ").repeated(logHeaderUsedCharSize);
 
         QString codeLine = "(" + message.fileName() + ":" + QString::number(message.codeLine()) + ")";
         auto codeLinePrint = [&] (const QString& space = QString()) {
-            print(" " + space);
+            print(currentColorFormatter, " " + space);
             currentColorFormatter = ColorFormatter().setForeground(ColorAttr::Blue).underline();
-            print(codeLine);
+            print(currentColorFormatter, codeLine);
             endStyle();
+            currentColorFormatter = ColorFormatter();
         };
 
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
@@ -162,16 +174,17 @@ namespace logcollector {
                     currentColorFormatter = ColorFormatter::fromLinuxColorCode(codes);
                     if (previousValid && currentColorFormatter.isInvalid()) {
                         endStyle();
+                        currentColorFormatter = ColorFormatter();
                     }
                 } else {
                     if (part.isStyleCode) {
-                        print("\x1b[" + part.part + "m");
+                        print(currentColorFormatter, "\x1b[" + part.part + "m");
                     } else {
                         if (part.nextLine) {
-                            print(logHeaderPlaceholder);
+                            print(currentColorFormatter, logHeaderPlaceholder);
                             lastLogLength = 0;
                         }
-                        print(part.part);
+                        print(currentColorFormatter, part.part);
                         lastLogLength += part.length();
                     }
                 }
@@ -193,7 +206,7 @@ namespace logcollector {
                 }
             }
         } else {
-            print(content);
+            print(currentColorFormatter, content);
             if (styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
                 codeLinePrint();
             }
@@ -208,23 +221,14 @@ namespace logcollector {
         }
     }
 
-    Console::Console() {
-#if defined Q_OS_WIN
-        CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-        consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-        GetConsoleScreenBufferInfo(consoleHandle, &bufferInfo);
-        wOldColorAttrs = bufferInfo.wAttributes;
-#endif
-    }
-
-    void Console::print(const QString &log) {
+    void Console::print(const ColorFormatter& formatter, const QString &log) {
         if (log.isEmpty()) {
             return;
         }
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP) {
-            if (!currentColorFormatter.isInvalid()) {
+            if (!formatter.isInvalid()) {
 #if defined Q_OS_WIN
-                SetConsoleTextAttribute(consoleHandle, currentColorFormatter.toWin32ColorCode());
+                SetConsoleTextAttribute(consoleHandle, formatter.toWin32ColorCode());
 #endif
             }
             if (styleConfig.useSystemCodePage) {
@@ -235,8 +239,8 @@ namespace logcollector {
         } else if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
 #if defined Q_OS_WIN
             if (styleConfig.win32DebugConsoleWithStdColorStyle) { //force use std color style
-                if (!currentColorFormatter.isInvalid()) {
-                    auto styleCode = currentColorFormatter.toStdColorCode();
+                if (!formatter.isInvalid()) {
+                    auto styleCode = formatter.toStdColorCode();
                     OutputDebugString(reinterpret_cast<const wchar_t*>(styleCode.utf16()));
                 }
             }
@@ -244,8 +248,8 @@ namespace logcollector {
             OutputDebugString(reinterpret_cast<const wchar_t*>(log.utf16()));
 #endif
         } else {
-            if (!currentColorFormatter.isInvalid()) {
-                std::cout << currentColorFormatter.toStdColorCode().toStdString();
+            if (!formatter.isInvalid()) {
+                std::cout << formatter.toStdColorCode().toStdString();
             }
             if (styleConfig.useSystemCodePage) {
                 std::cout << log.toLocal8Bit().data();
@@ -255,8 +259,8 @@ namespace logcollector {
         }
     }
 
-    void Console::beginMessageType(const QtMsgType& type) {
-        currentColorFormatter = ColorFormatter();
+    ColorFormatter Console::beginMessageType(const QtMsgType& type) {
+        ColorFormatter currentColorFormatter;
         switch (type) {
             case QtDebugMsg:
                 currentColorFormatter.setForeground(ColorAttr::Green, 1);
@@ -272,10 +276,10 @@ namespace logcollector {
                 currentColorFormatter.setForeground(ColorAttr::Red, 1);
                 break;
         }
+        return currentColorFormatter;
     }
 
     void Console::endStyle() {
-        currentColorFormatter = ColorFormatter();
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP) {
 #if defined Q_OS_WIN
             SetConsoleTextAttribute(consoleHandle, wOldColorAttrs);

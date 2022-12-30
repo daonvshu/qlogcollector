@@ -46,7 +46,7 @@ namespace logcollector {
         bool mUnderlineEnabled;
         bool win32DebugConsoleWithStdColorStyle;
 
-        friend class Console;
+        friend struct Console;
         friend class StyledString;
         friend class QLogCollector;
         friend class ColorFormatter;

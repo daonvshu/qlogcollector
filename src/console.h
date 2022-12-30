@@ -9,26 +9,11 @@
 
 namespace logcollector {
 
-    class Console {
-    public:
-        Console();
-
-        static Console &instance();
-
-        void printMessage(Message &message);
-
-    private:
-        ColorFormatter currentColorFormatter;
-
-#if defined Q_OS_WIN
-        WORD wOldColorAttrs;
-        HANDLE consoleHandle;
-#endif
-
-    private:
-        void print(const QString& log);
-        void beginMessageType(const QtMsgType& type);
-        void endStyle();
+    struct Console {
+        static void printMessage(Message &message);
+        static void print(const ColorFormatter& formatter, const QString& log);
+        static ColorFormatter beginMessageType(const QtMsgType& type);
+        static void endStyle();
     };
 
     struct ConsoleLogPart {

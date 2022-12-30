@@ -9,12 +9,11 @@
 int main(int argc, char* argv[]) {
 
     QCoreApplication a(argc, argv);
-    logcollector::QLogCollector::init().registerLog();
 
 #ifdef Q_OS_WIN
     logcollector::styleConfig
         .consoleApp()
-        .ide_clion(true)
+        .ide_clion(false)
         //.ide_vs()
         //.ide_vscode()
         //.ide_qtcreator()
@@ -27,6 +26,7 @@ int main(int argc, char* argv[]) {
         //.ide_qtcreator()
         .wordWrap(90)
 #endif
+    logcollector::QLogCollector::init().registerLog();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();

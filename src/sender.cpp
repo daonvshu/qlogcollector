@@ -1,6 +1,7 @@
 #include "sender.h"
 
 #include "cache.h"
+#include "console.h"
 
 #include <qcoreapplication.h>
 
@@ -44,8 +45,9 @@ namespace logcollector {
         connect(tcpServer, &QTcpServer::acceptError, this, [&] (QAbstractSocket::SocketError e) {
             QString errStr;
             QDebug(&errStr) << e;
-            auto bytes = errStr.toUtf8();
-            printf("server accept error occur: %s", bytes.data());
+            errStr.prepend("server accept error occur:");
+            Console::print(ColorFormatter().setForeground(ColorAttr::Red), errStr);
+            Console::endStyle();
         });
         tcpServer->listen(QHostAddress::AnyIPv4, port);
     }

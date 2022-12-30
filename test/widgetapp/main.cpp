@@ -8,11 +8,10 @@ int main(int argc, char* argv[]) {
 
     QApplication a(argc, argv);
 
-    logcollector::QLogCollector::init().registerLog();
 #ifdef Q_OS_WIN
     logcollector::styleConfig
         .windowApp()
-        .ide_clion(true)
+        .ide_clion(false)
         //.ide_vs()
         //.ide_vscode()
         //.ide_qtcreator()
@@ -26,6 +25,7 @@ int main(int argc, char* argv[]) {
         .wordWrap(90)
     ;
 #endif
+    logcollector::QLogCollector::init().registerLog();
 
     LogTest logTest;
     logTest.show();

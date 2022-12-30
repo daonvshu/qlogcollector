@@ -42,7 +42,7 @@ namespace logcollector {
     }
 
     void Cache::postToLocal(Message &message) {
-        Console::instance().printMessage(message);
+        Console::printMessage(message);
     }
 
     QByteArray Cache::packageMessage(Message& message) {
