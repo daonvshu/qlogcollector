@@ -21,8 +21,12 @@ namespace logcollector {
         mutex.unlock();
     }
 
-    QLogCollector &QLogCollector::init() {
-        return instance();
+    QLogCollector &QLogCollector::init(int serviceListeningPort) {
+        auto& i = instance();
+        if (!i.sender) {
+            i.sender = new Sender(serviceListeningPort, &i);
+        }
+        return i;
     }
 
     void QLogCollector::registerLog() {
@@ -52,8 +56,7 @@ namespace logcollector {
         sender->appendNewMessage(message);
     }
 
-    QLogCollector::QLogCollector() {
-        sender = new Sender(this);
+    QLogCollector::QLogCollector() : sender(nullptr) {
         threadNames.insert(QThread::currentThreadId(), "main");
     }
 

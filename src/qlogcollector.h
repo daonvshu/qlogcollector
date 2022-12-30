@@ -12,7 +12,7 @@ namespace logcollector {
         Q_DISABLE_COPY(QLogCollector)
 
     public:
-        static QLogCollector &init();
+        static QLogCollector &init(int serviceListeningPort = 60025);
 
         void registerLog();
 

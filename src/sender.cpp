@@ -6,7 +6,7 @@
 
 namespace logcollector {
 
-    Sender::Sender(QObject *parent)
+    Sender::Sender(int serviceListeningPort, QObject *parent)
         : QObject(parent)
     {
         thread = new QThread(this);
@@ -16,7 +16,7 @@ namespace logcollector {
         connect(thread, &QThread::finished, sendTask, &SendTask::deleteLater);
         thread->start();
 
-        sendTask->startTask();
+        sendTask->startTask(serviceListeningPort);
 
         cache = new Cache(1000, this);
         connect(cache, &Cache::postNewLog, sendTask, &SendTask::sendCache);
@@ -38,7 +38,7 @@ namespace logcollector {
         connect(this, &SendTask::sendCache, this, &SendTask::handleSendCache);
     }
 
-    void SendTask::createListener() {
+    void SendTask::createListener(int port/*= 60025*/) {
         tcpServer = new QTcpServer(this);
         connect(tcpServer, &QTcpServer::newConnection, this, &SendTask::handleNewConnection);
         connect(tcpServer, &QTcpServer::acceptError, this, [&] (QAbstractSocket::SocketError e) {
@@ -47,7 +47,7 @@ namespace logcollector {
             auto bytes = errStr.toUtf8();
             printf("server accept error occur: %s", bytes.data());
         });
-        tcpServer->listen(QHostAddress::AnyIPv4, 60025);
+        tcpServer->listen(QHostAddress::AnyIPv4, port);
     }
 
     void SendTask::handleNewConnection() {

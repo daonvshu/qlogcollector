@@ -13,7 +13,7 @@ namespace logcollector {
     class Cache;
     class Sender : public QObject {
     public:
-        explicit Sender(QObject* parent = nullptr);
+        explicit Sender(int serviceListeningPort, QObject* parent = nullptr);
 
         void appendNewMessage(Message& message);
 
@@ -31,12 +31,12 @@ namespace logcollector {
         explicit SendTask();
 
     signals:
-        void startTask();
+        void startTask(int port);
         void sendCache(const QByteArray& log, void* socketTarget);
         void requestSendAllLogs(void* socketTarget);
 
     private slots:
-        void createListener();
+        void createListener(int port);
         void handleNewConnection();
         void solveClientData();
         void handleClientDisconnected();
