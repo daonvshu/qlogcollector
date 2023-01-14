@@ -111,3 +111,19 @@ styled("log", true, true) //日志内容，是否闪烁（仅支持的控制台�
   .wb()
 ;
 ```
+
+### CMakeLists相关的配置
+```cmake
+#...
+
+#添加qlogcollector模块
+add_subdirectory(3rdparty/qlogcollector/src)
+
+#...
+
+#静态链接到qlogcollector
+target_link_libraries(${PROJECT_NAME}
+    #...
+    qlogcollector::server
+)
+```
