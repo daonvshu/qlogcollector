@@ -53,7 +53,8 @@ namespace logcollector {
         auto bytes = jsonStr;
         char* compressBuf = (char*) malloc(bytes.size());
         auto compressedLen = unishox2_compress_simple(bytes.data(), bytes.size(), compressBuf);
-        QByteArray compressedBytes(compressBuf, compressedLen);
+        compressBuf[compressedLen] = '\0';
+        QByteArray compressedBytes(compressBuf, compressedLen + 1);
         free(compressBuf);
         return compressedBytes.toBase64() + ",";
     }

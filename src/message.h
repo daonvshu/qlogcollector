@@ -18,4 +18,13 @@ namespace logcollector {
             return { &timePoint, &category, &fileName, &codeLine, &threadName, &threadId, &level, &log };
         }
     };
+
+    struct BroadcastInfo : public JsonDumpInterface {
+        ConfigKey<QString> sysInfo{"a"};
+        ConfigKey<qint64> processId{"b"};
+
+        QList<JsonReadInterface *> prop() override {
+            return { &sysInfo, &processId };
+        }
+    };
 }

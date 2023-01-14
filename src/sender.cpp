@@ -2,6 +2,7 @@
 
 #include "cache.h"
 #include "console.h"
+#include "notifier.h"
 
 #include <qcoreapplication.h>
 
@@ -28,6 +29,9 @@ namespace logcollector {
             thread->quit();
             thread->wait();
         });
+
+        Notifier::init(serviceListeningPort, this);
+        Notifier::startOrStopNotify();
     }
 
     void Sender::appendNewMessage(Message &message) {
@@ -57,6 +61,7 @@ namespace logcollector {
         connect(client, &QTcpSocket::readyRead, this, &SendTask::solveClientData);
         connect(client, &QTcpSocket::disconnected, this, &SendTask::handleClientDisconnected);
         clients.append(client);
+        Notifier::startOrStopNotify(false);
         requestSendAllLogs(client);
     }
 
@@ -69,6 +74,9 @@ namespace logcollector {
     void SendTask::handleClientDisconnected() {
         auto socket = qobject_cast<QTcpSocket*>(sender());
         clients.removeOne(socket);
+        if (clients.isEmpty()) {
+            Notifier::startOrStopNotify();
+        }
         socket->deleteLater();
     }
 
