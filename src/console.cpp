@@ -117,7 +117,7 @@ namespace logcollector {
                     count += logPart.at(logPartIndex).length();
                     if (count == styleConfig.mLogLineWidth) {
                         int nextPos = logPartIndex;
-                        while (logPart.at(++nextPos).isStyleCode);
+                        while (++nextPos < logPart.size() && logPart.at(nextPos).isStyleCode);
                         if (nextPos < logPart.size()) {
                             logPart[nextPos].nextLine = true;
                         }
