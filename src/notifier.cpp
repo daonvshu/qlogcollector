@@ -54,19 +54,21 @@ namespace logcollector {
         auto jsonStr = QJsonDocument(broadcastInfo.dumpToJson()).toJson(QJsonDocument::Compact);
 
         auto bytes = jsonStr;
+        bytes.append('\0');
         char* compressBuf = (char*) malloc(bytes.size());
         auto compressedLen = unishox2_compress_simple(bytes.data(), bytes.size(), compressBuf);
-        compressBuf[compressedLen] = '\0';
-        QByteArray compressedBytes(compressBuf, compressedLen + 1);
+        QByteArray compressedBytes(compressBuf, compressedLen);
         free(compressBuf);
         compressedBytes = compressedBytes.toBase64();
 
         for(const auto& interfaces: QNetworkInterface::allInterfaces()) {
             for(const auto& entry: interfaces.addressEntries()) {
-            QHostAddress broadcastAddress = entry.broadcast();
+                QHostAddress broadcastAddress = entry.broadcast();
                 if (broadcastAddress != QHostAddress::Null
+                    && !entry.ip().isLinkLocal()
                     && entry.ip() != QHostAddress::LocalHost
-                    && entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
+                    && entry.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                {
                     udpSocket->writeDatagram(compressedBytes.data(), compressedBytes.size(), broadcastAddress, mSendPort);
                 }
             }
