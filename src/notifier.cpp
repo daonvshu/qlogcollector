@@ -21,27 +21,49 @@ namespace logcollector {
     }
 
     void Notifier::startOrStopNotify(bool start) {
-        if (start) {
-            instance->notifyTimer->start();
-        } else {
-            instance->notifyTimer->stop();
+        if (instance) {
+            if (start) {
+                instance->worker->startNotify();
+            } else {
+                instance->worker->stopNotify();
+            }
         }
     }
 
     Notifier::Notifier(int sendPort, QObject* parent)
         : QObject(parent)
-        , mSendPort(sendPort)
     {
+        thread = new QThread(this);
+        worker = new NotifierWorker;
+        worker->moveToThread(thread);
+
+        connect(thread, &QThread::finished, worker, &NotifierWorker::deleteLater);
+        thread->start();
+
+        worker->createService(sendPort);
+    }
+
+    NotifierWorker::NotifierWorker() {
+        connect(this, &NotifierWorker::createService, this, &NotifierWorker::createUdpService, Qt::QueuedConnection);
+    }
+
+    void NotifierWorker::createUdpService(int sendPort) {
+        mSendPort = sendPort;
+
         notifyTimer = new QTimer(this);
         notifyTimer->setInterval(1000);
         notifyTimer->setSingleShot(false);
 
-        connect(notifyTimer, &QTimer::timeout, this, &Notifier::notifyBaseInfo);
+        connect(notifyTimer, &QTimer::timeout, this, &NotifierWorker::notifyBaseInfo, Qt::QueuedConnection);
+        notifyTimer->start();
 
         udpSocket = new QUdpSocket(this);
+
+        connect(this, &NotifierWorker::startNotify, notifyTimer, QOverload<>::of(&QTimer::start), Qt::QueuedConnection);
+        connect(this, &NotifierWorker::stopNotify, notifyTimer, &QTimer::stop, Qt::QueuedConnection);
     }
 
-    void Notifier::notifyBaseInfo() {
+    void NotifierWorker::notifyBaseInfo() {
         BroadcastInfo broadcastInfo;
 
         QString sysInfo = "%1/%2 %3 %4 (%5)";

@@ -10,6 +10,7 @@ namespace logcollector {
 
     Sender::Sender(int serviceListeningPort, QObject *parent)
         : QObject(parent)
+        , serviceListeningPort(serviceListeningPort)
     {
         thread = new QThread(this);
         sendTask = new SendTask;
@@ -29,13 +30,14 @@ namespace logcollector {
             thread->quit();
             thread->wait();
         });
-
-        Notifier::init(serviceListeningPort, this);
-        Notifier::startOrStopNotify();
     }
 
     void Sender::appendNewMessage(Message &message) {
         cache->append(message);
+    }
+
+    void Sender::publishService() {
+        Notifier::init(serviceListeningPort, this);
     }
 
     SendTask::SendTask() {

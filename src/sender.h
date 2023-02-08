@@ -17,11 +17,14 @@ namespace logcollector {
 
         void appendNewMessage(Message& message);
 
+        void publishService();
+
     private:
         QThread* thread;
         SendTask* sendTask;
 
         Cache* cache;
+        int serviceListeningPort;
     };
 
     class SendTask : public QObject {

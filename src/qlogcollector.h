@@ -14,7 +14,9 @@ namespace logcollector {
     public:
         static QLogCollector &init(int serviceListeningPort = 60025);
 
-        void registerLog();
+        QLogCollector& registerLog();
+
+        QLogCollector& publishService();
 
         void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 

@@ -29,8 +29,14 @@ namespace logcollector {
         return i;
     }
 
-    void QLogCollector::registerLog() {
+    QLogCollector& QLogCollector::registerLog() {
         qInstallMessageHandler(customMessageHandler);
+        return *this;
+    }
+
+    QLogCollector& QLogCollector::publishService() {
+        instance().sender->publishService();
+        return *this;
     }
 
     void QLogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
