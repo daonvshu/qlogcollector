@@ -2,6 +2,7 @@
 
 #include "message.h"
 #include "sender.h"
+#include "cache.h"
 #include "console.h"
 
 #include <qmutex.h>
@@ -9,6 +10,7 @@
 #include <qthread.h>
 #include <qdatetime.h>
 #include <qdir.h>
+#include <qcoreapplication.h>
 
 #include "consolestyle.h"
 
@@ -21,21 +23,13 @@ namespace logcollector {
         mutex.unlock();
     }
 
-    QLogCollector &QLogCollector::init(int serviceListeningPort) {
-        auto& i = instance();
-        if (!i.sender) {
-            i.sender = new Sender(serviceListeningPort, &i);
-        }
-        return i;
-    }
-
     QLogCollector& QLogCollector::registerLog() {
         qInstallMessageHandler(customMessageHandler);
         return *this;
     }
 
-    QLogCollector& QLogCollector::publishService() {
-        instance().sender->publishService();
+    QLogCollector& QLogCollector::publishService(int serviceListeningPort) {
+        sender->publishService(serviceListeningPort);
         return *this;
     }
 
@@ -59,10 +53,16 @@ namespace logcollector {
         message.level = type;
         message.log = msg;
 
-        sender->appendNewMessage(message);
+        cache->append(message);
     }
 
-    QLogCollector::QLogCollector() : sender(nullptr) {
+    QLogCollector::QLogCollector() {
+        sender = new Sender(this);
+        cache = new Cache(1000, this);
+
+        connect(cache, &Cache::postNewLog, sender->sendTask, &SendTask::sendCache);
+        connect(sender->sendTask, &SendTask::requestSendAllLogs, cache, &Cache::packageAllToTarget, Qt::DirectConnection);
+
         threadNames.insert(QThread::currentThreadId(), "main");
     }
 

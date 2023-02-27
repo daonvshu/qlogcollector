@@ -8,36 +8,31 @@
 
 namespace logcollector {
 
-    Sender::Sender(int serviceListeningPort, QObject *parent)
+    Sender::Sender(QObject *parent)
         : QObject(parent)
-        , serviceListeningPort(serviceListeningPort)
+        , notifier(nullptr)
     {
         thread = new QThread(this);
         sendTask = new SendTask;
         sendTask->moveToThread(thread);
 
         connect(thread, &QThread::finished, sendTask, &SendTask::deleteLater);
-        thread->start();
-
-        sendTask->startTask(serviceListeningPort);
-
-        cache = new Cache(1000, this);
-        connect(cache, &Cache::postNewLog, sendTask, &SendTask::sendCache);
-
-        connect(sendTask, &SendTask::requestSendAllLogs, cache, &Cache::packageAllToTarget);
 
         connect(qApp, &QCoreApplication::aboutToQuit, this, [&]{
+            if (notifier) {
+                notifier->quit();
+            }
             thread->quit();
             thread->wait();
         });
     }
 
-    void Sender::appendNewMessage(Message &message) {
-        cache->append(message);
-    }
+    void Sender::publishService(int serviceListeningPort) {
+        thread->start();
+        sendTask->startTask(serviceListeningPort);
 
-    void Sender::publishService() {
-        Notifier::init(serviceListeningPort, this);
+        notifier = new Notifier(serviceListeningPort, this);
+        connect(sendTask, &SendTask::deviceInfoBroadcast, notifier, &Notifier::startOrStopNotify);
     }
 
     SendTask::SendTask() {
@@ -63,7 +58,7 @@ namespace logcollector {
         connect(client, &QTcpSocket::readyRead, this, &SendTask::solveClientData);
         connect(client, &QTcpSocket::disconnected, this, &SendTask::handleClientDisconnected);
         clients.append(client);
-        Notifier::startOrStopNotify(false);
+        deviceInfoBroadcast(false);
         requestSendAllLogs(client);
     }
 
@@ -77,7 +72,7 @@ namespace logcollector {
         auto socket = qobject_cast<QTcpSocket*>(sender());
         clients.removeOne(socket);
         if (clients.isEmpty()) {
-            Notifier::startOrStopNotify();
+            deviceInfoBroadcast(true);
         }
         socket->deleteLater();
     }

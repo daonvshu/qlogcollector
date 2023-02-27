@@ -33,16 +33,13 @@ namespace logcollector {
 
     class Notifier : public QObject {
     public:
-        static Notifier* init(int sendPort, QObject* parent);
-
-        static void startOrStopNotify(bool start = true);
-
-    private:
         explicit Notifier(int sendPort, QObject* parent);
 
-    private:
-        static Notifier* instance;
+        void startOrStopNotify(bool start = true);
 
+        void quit();
+
+    private:
         QThread* thread;
         NotifierWorker* worker;
     };

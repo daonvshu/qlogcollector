@@ -10,21 +10,19 @@
 namespace logcollector {
 
     class SendTask;
-    class Cache;
+    class Notifier;
     class Sender : public QObject {
     public:
-        explicit Sender(int serviceListeningPort, QObject* parent = nullptr);
+        explicit Sender(QObject* parent = nullptr);
 
-        void appendNewMessage(Message& message);
-
-        void publishService();
+        void publishService(int serviceListeningPort);
 
     private:
         QThread* thread;
         SendTask* sendTask;
+        Notifier* notifier;
 
-        Cache* cache;
-        int serviceListeningPort;
+        friend class QLogCollector;
     };
 
     class SendTask : public QObject {
@@ -37,6 +35,7 @@ namespace logcollector {
         void startTask(int port);
         void sendCache(const QByteArray& log, void* socketTarget);
         void requestSendAllLogs(void* socketTarget);
+        void deviceInfoBroadcast(bool notify);
 
     private slots:
         void createListener(int port);

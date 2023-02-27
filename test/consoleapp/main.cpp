@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         //.ide_qtcreator()
         .wordWrap(90)
 #endif
-    logcollector::QLogCollector::init().registerLog();
+    logcollector::QLogCollector::instance().publishService().registerLog();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();

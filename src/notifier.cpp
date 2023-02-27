@@ -11,25 +11,6 @@ extern "C" {
 
 namespace logcollector {
 
-    Notifier* Notifier::instance = nullptr;
-
-    Notifier* Notifier::init(int sendPort, QObject* parent) {
-        if (instance == nullptr) {
-            instance = new Notifier(sendPort, parent);
-        }
-        return instance;
-    }
-
-    void Notifier::startOrStopNotify(bool start) {
-        if (instance) {
-            if (start) {
-                instance->worker->startNotify();
-            } else {
-                instance->worker->stopNotify();
-            }
-        }
-    }
-
     Notifier::Notifier(int sendPort, QObject* parent)
         : QObject(parent)
     {
@@ -43,6 +24,19 @@ namespace logcollector {
         worker->createService(sendPort);
     }
 
+    void Notifier::startOrStopNotify(bool start) {
+        if (start) {
+            worker->startNotify();
+        } else {
+            worker->stopNotify();
+        }
+    }
+
+    void Notifier::quit() {
+        thread->quit();
+        thread->wait();
+    }
+
     NotifierWorker::NotifierWorker() {
         connect(this, &NotifierWorker::createService, this, &NotifierWorker::createUdpService, Qt::QueuedConnection);
     }
@@ -53,7 +47,6 @@ namespace logcollector {
         notifyTimer = new QTimer(this);
         notifyTimer->setInterval(1000);
         notifyTimer->setSingleShot(false);
-
         connect(notifyTimer, &QTimer::timeout, this, &NotifierWorker::notifyBaseInfo, Qt::QueuedConnection);
         notifyTimer->start();
 
