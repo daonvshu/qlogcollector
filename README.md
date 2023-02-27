@@ -55,7 +55,7 @@ logcollector::styleConfig
 
 初始化并注册日志：
 ```cpp
-logcollector::QLogCollector::init().registerLog();
+logcollector::QLogCollector::instance().publishService().registerLog();
 ```
 `registerLog`函数内部会调用`qInstallMessageHandler`拦截qDebug输出，如果要主动拦截qDebug，在回调中调用`collectorMessageHandle`
 ```cpp
