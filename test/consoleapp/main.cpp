@@ -33,7 +33,10 @@ int main(int argc, char* argv[]) {
     PrintTest::printWithColor();
     PrintTest::longText();
 
-    QTimer::singleShot(1000, &a, &QCoreApplication::quit);
+    QTimer::singleShot(1000, &a, [&] {
+        logcollector::QLogCollector::save("test.log");
+        a.quit();
+    });
 
     return a.exec();
 }

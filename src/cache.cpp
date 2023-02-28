@@ -2,7 +2,7 @@
 #include "console.h"
 
 #include <qdatetime.h>
-#include <qdebug.h>
+#include <qfile.h>
 
 extern "C" {
 #include <unishox2.h>
@@ -19,15 +19,14 @@ namespace logcollector {
     }
 
     void Cache::append(Message &message) {
+        postToLocal(message);
+        auto jsonStr = packageMessage(message);
         mutex.lock();
-        messages.append(message);
+        messages.append(jsonStr);
         if (messages.size() > limitSize) {
             messages.removeFirst();
         }
         mutex.unlock();
-
-        postToLocal(message);
-        auto jsonStr = packageMessage(message);
         postNewLog(jsonStr, nullptr);
     }
 
@@ -35,10 +34,21 @@ namespace logcollector {
         QByteArray historyLogs;
         mutex.lock();
         for (auto& message: messages) {
-            historyLogs.append(packageMessage(message));
+            historyLogs.append(message);
         }
         mutex.unlock();
         postNewLog(historyLogs, socketTarget);
+    }
+
+    void Cache::save2File(const QString &filePath) {
+        QFile logFile(filePath);
+        if (logFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            for (auto& message: messages) {
+                logFile.write(message);
+            }
+            logFile.flush();
+            logFile.close();
+        }
     }
 
     void Cache::postToLocal(Message &message) {

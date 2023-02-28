@@ -21,6 +21,8 @@ namespace logcollector {
 
         void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
+        static void save(const QString& filePath);
+
     private:
         explicit QLogCollector();
 

@@ -70,4 +70,8 @@ namespace logcollector {
         static QLogCollector logCollector;
         return logCollector;
     }
+
+    void QLogCollector::save(const QString &filePath) {
+        instance().cache->save2File(filePath);
+    }
 }

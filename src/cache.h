@@ -17,13 +17,15 @@ namespace logcollector {
 
         void packageAllToTarget(void* socketTarget);
 
+        void save2File(const QString& filePath);
+
     signals:
         void postNewLog(const QByteArray& log, void* socketTarget);
 
     private:
         QMutex mutex;
         int limitSize;
-        QList<Message> messages;
+        QList<QByteArray> messages;
 
     private:
         static void postToLocal(Message& message);
