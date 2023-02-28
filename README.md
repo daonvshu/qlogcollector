@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
         .ide_clion(false)
         .wordWrap(120)
     ;
-    logcollector::QLogCollector::init();
+    logcollector::QLogCollector::instance().publishService();
     qInstallMessageHandler(myCustomMessageHandler);
     
     //init your application ...
