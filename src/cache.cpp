@@ -61,7 +61,7 @@ namespace logcollector {
         auto jsonStr = doc.toJson(QJsonDocument::Compact);
         //base64
         auto bytes = jsonStr;
-        char* compressBuf = (char*) malloc(bytes.size());
+        char* compressBuf = (char*) malloc(bytes.size() * 2);
         auto compressedLen = unishox2_compress_simple(bytes.data(), bytes.size(), compressBuf);
         compressBuf[compressedLen] = '\0';
         QByteArray compressedBytes(compressBuf, compressedLen + 1);
