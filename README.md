@@ -118,7 +118,8 @@ styled("log", true, true) //日志内容，是否闪烁（仅支持的控制台�
 
 #添加qlogcollector模块
 add_subdirectory(3rdparty/qlogcollector/src)
-
+#或使用CPM添加
+#CPMAddPackage("gh:daonvshu/qlogcollector@1.0.0")
 #...
 
 #静态链接到qlogcollector
