@@ -80,7 +80,9 @@ namespace logcollector {
             for(const auto& entry: interfaces.addressEntries()) {
                 QHostAddress broadcastAddress = entry.broadcast();
                 if (broadcastAddress != QHostAddress::Null
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
                     && !entry.ip().isLinkLocal()
+#endif
                     && entry.ip() != QHostAddress::LocalHost
                     && entry.ip().protocol() == QAbstractSocket::IPv4Protocol)
                 {
