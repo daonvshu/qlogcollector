@@ -41,7 +41,7 @@ namespace logcollector {
         if (styleConfig.mSimpleCodeLine && styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             message.fileName = QFileInfo(context.file).fileName();
         } else {
-            static QDir dir(ROOT_PROJECT_PATH);
+            QDir dir(ROOT_PROJECT_PATH);
             message.fileName = "./" + dir.relativeFilePath(context.file);
         }
         message.codeLine = context.line;

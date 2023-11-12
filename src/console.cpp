@@ -88,7 +88,7 @@ namespace logcollector {
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
         auto content = message.log();
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP || wordsWrapMode) {
-            static QRegExp rx("\x1b\\[(\\d+(;\\d+)*)m");
+            QRegExp rx("\x1b\\[(\\d+(;\\d+)*)m");
             int pos = 0;
             int lastPos = 0;
             QList<ConsoleLogPart> logPart;
@@ -129,7 +129,7 @@ namespace logcollector {
                         //split
                         int spareLength = count - styleConfig.mLogLineWidth;
                         int index = logPart.at(logPartIndex).length() - spareLength;
-                        static QRegExp rx2("[^0-9a-zA-Z\"]");
+                        QRegExp rx2("[^0-9a-zA-Z\"]");
                         auto newIndex = logPart.at(logPartIndex).part.lastIndexOf(rx2, index);
                         if (newIndex != -1) {
                             if (index != newIndex) {
