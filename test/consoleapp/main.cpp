@@ -2,7 +2,7 @@
 #include <qtimer.h>
 
 #include "../printtest.h"
-#include "qlogcollector.h"
+#include "../../include/qlogcollector.h"
 
 #include <qdebug.h>
 

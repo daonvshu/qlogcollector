@@ -4,7 +4,7 @@
 #include <qloggingcategory.h>
 #include <QtConcurrent/QtConcurrent>
 
-#include "styledstring.h"
+#include "../include/styledstring.h"
 
 Q_LOGGING_CATEGORY(mainLog, "main.log")
 

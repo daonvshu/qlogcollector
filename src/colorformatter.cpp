@@ -1,6 +1,6 @@
-#include "colorformatter.h"
+#include "../include/colorformatter.h"
 
-#include "consolestyle.h"
+#include "../include/consolestyle.h"
 
 namespace logcollector {
 

@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         .wordWrap(90)
     ;
 #endif
-    logcollector::QLogCollector::init().registerLog();
+    logcollector::QLogCollector::instance().registerLog();
 
     LogTest logTest;
     logTest.show();

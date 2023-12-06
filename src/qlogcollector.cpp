@@ -1,9 +1,8 @@
-#include "qlogcollector.h"
+#include "../include/qlogcollector.h"
 
-#include "message.h"
-#include "sender.h"
-#include "cache.h"
-#include "console.h"
+#include "../include/message.h"
+#include "../include/cache.h"
+#include "../include/console.h"
 
 #include <qmutex.h>
 #include <qfileinfo.h>
@@ -11,8 +10,6 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qcoreapplication.h>
-
-#include "consolestyle.h"
 
 namespace logcollector {
 
@@ -28,11 +25,6 @@ namespace logcollector {
         return *this;
     }
 
-    QLogCollector& QLogCollector::publishService(int serviceListeningPort) {
-        sender->publishService(serviceListeningPort);
-        return *this;
-    }
-
     void QLogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
         Message message;
         message.timePoint = QDateTime::currentMSecsSinceEpoch();
@@ -41,7 +33,7 @@ namespace logcollector {
         if (styleConfig.mSimpleCodeLine && styleConfig.mOutputTarget != ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             message.fileName = QFileInfo(context.file).fileName();
         } else {
-            static QDir dir(ROOT_PROJECT_PATH);
+            QDir dir(ROOT_PROJECT_PATH);
             message.fileName = "./" + dir.relativeFilePath(context.file);
         }
         message.codeLine = context.line;
@@ -57,12 +49,7 @@ namespace logcollector {
     }
 
     QLogCollector::QLogCollector() {
-        sender = new Sender(this);
         cache = new Cache(1000, this);
-
-        connect(cache, &Cache::postNewLog, sender->sendTask, &SendTask::sendCache);
-        connect(sender->sendTask, &SendTask::requestSendAllLogs, cache, &Cache::packageAllToTarget, Qt::DirectConnection);
-
         threadNames.insert(QThread::currentThreadId(), "main");
     }
 
@@ -71,7 +58,7 @@ namespace logcollector {
         return logCollector;
     }
 
-    void QLogCollector::save(const QString &filePath) {
-        instance().cache->save2File(filePath);
+    void QLogCollector::save(QIODevice* device, const QByteArray& splitStr) {
+        instance().cache->save2Device(device, splitStr);
     }
 }

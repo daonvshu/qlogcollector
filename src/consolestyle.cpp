@@ -1,4 +1,4 @@
-#include "consolestyle.h"
+#include "../include/consolestyle.h"
 
 #include <qglobal.h>
 

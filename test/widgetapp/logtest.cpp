@@ -4,6 +4,8 @@
 
 #include <qsysinfo.h>
 #include <qdebug.h>
+#include <qlogcollector.h>
+#include <qbuffer.h>
 
 LogTest::LogTest(QWidget *parent)
     : QWidget(parent)
@@ -47,4 +49,13 @@ void LogTest::on_post_long_string_clicked() {
     sysInfo = sysInfo.arg(QSysInfo::prettyProductName(), QSysInfo::kernelType(), QSysInfo::kernelVersion(),
                           QSysInfo::currentCpuArchitecture(), QSysInfo::machineHostName());
     qDebug() << sysInfo;
+}
+
+void LogTest::on_btn_collect_clicked() {
+    QByteArray buff;
+    QBuffer byteBuff(&buff);
+    byteBuff.open(QIODevice::WriteOnly);
+
+    logcollector::QLogCollector::save(&byteBuff, ",");
+    qDebug() << buff;
 }

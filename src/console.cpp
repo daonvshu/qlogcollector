@@ -1,4 +1,4 @@
-#include "console.h"
+#include "../include/console.h"
 
 #include <iostream>
 #include <qregexp.h>
@@ -27,31 +27,31 @@ namespace logcollector {
 
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_DEBUG_CONSOLE) {
             //add extra code line to navigate to source code line
-            QString codeLine = message.fileName() + "(" + QString::number(message.codeLine()) + "):\n";
+            QString codeLine = message.fileName + "(" + QString::number(message.codeLine) + "):\n";
 #if defined Q_OS_WIN
             //ignore unsupported color style
             OutputDebugString(reinterpret_cast<const wchar_t*>(codeLine.utf16()));
 #endif
         }
 
-        auto dateTime = QDateTime::fromMSecsSinceEpoch(message.timePoint());
+        auto dateTime = QDateTime::fromMSecsSinceEpoch(message.timePoint);
         print(currentColorFormatter, dateTime.toString("HH:mm:ss.zzz  "));
 
-        auto threadName = message.threadName();
+        auto threadName = message.threadName;
         if (threadName.isEmpty()) {
-            threadName = QString::number(message.threadId()).right(6);
+            threadName = QString::number(message.threadId).right(6);
         }
         print(currentColorFormatter, threadName.leftJustified(8, ' ', true));
         print(currentColorFormatter, "  ");
 
-        if (message.category() == "default") {
+        if (message.category == "default") {
             print(currentColorFormatter, QString("<no-category>").leftJustified(14, ' ', true));
         } else {
-            print(currentColorFormatter, message.category().leftJustified(14, ' ', true));
+            print(currentColorFormatter, message.category.leftJustified(14, ' ', true));
         }
         print(currentColorFormatter, "  ");
 
-        auto msgType = (QtMsgType)message.level();
+        auto msgType = (QtMsgType)message.level;
         currentColorFormatter = beginMessageType(msgType);
 
         switch (msgType) {
@@ -76,7 +76,7 @@ namespace logcollector {
         const int logHeaderUsedCharSize = 46;
         const auto logHeaderPlaceholder = "\n" + QString(" ").repeated(logHeaderUsedCharSize);
 
-        QString codeLine = "(" + message.fileName() + ":" + QString::number(message.codeLine()) + ")";
+        QString codeLine = "(" + message.fileName + ":" + QString::number(message.codeLine) + ")";
         auto codeLinePrint = [&] (const QString& space = QString()) {
             print(currentColorFormatter, " " + space);
             currentColorFormatter = ColorFormatter().setForeground(ColorAttr::Blue).underline();
@@ -86,9 +86,9 @@ namespace logcollector {
         };
 
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
-        auto content = message.log();
+        auto content = message.log;
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP || wordsWrapMode) {
-            static QRegExp rx("\x1b\\[(\\d+(;\\d+)*)m");
+            QRegExp rx("\x1b\\[(\\d+(;\\d+)*)m");
             int pos = 0;
             int lastPos = 0;
             QList<ConsoleLogPart> logPart;
@@ -129,7 +129,7 @@ namespace logcollector {
                         //split
                         int spareLength = count - styleConfig.mLogLineWidth;
                         int index = logPart.at(logPartIndex).length() - spareLength;
-                        static QRegExp rx2("[^0-9a-zA-Z\"]");
+                        QRegExp rx2("[^0-9a-zA-Z\"]");
                         auto newIndex = logPart.at(logPartIndex).part.lastIndexOf(rx2, index);
                         if (newIndex != -1) {
                             if (index != newIndex) {

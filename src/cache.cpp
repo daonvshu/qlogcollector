@@ -1,12 +1,5 @@
-#include "cache.h"
-#include "console.h"
-
-#include <qdatetime.h>
-#include <qfile.h>
-
-extern "C" {
-#include <unishox2.h>
-}
+#include "../include/cache.h"
+#include "../include/console.h"
 
 namespace logcollector {
 
@@ -15,57 +8,31 @@ namespace logcollector {
         : QObject(parent)
         , limitSize(cacheMaxSize)
     {
-
     }
 
     void Cache::append(Message &message) {
         postToLocal(message);
-        auto jsonStr = packageMessage(message);
+        auto jsonStr = message.dumpToJson().toUtf8().toBase64();
         mutex.lock();
         messages.append(jsonStr);
         if (messages.size() > limitSize) {
             messages.removeFirst();
         }
         mutex.unlock();
-        postNewLog(jsonStr, nullptr);
     }
 
-    void Cache::packageAllToTarget(void* socketTarget) {
-        QByteArray historyLogs;
+    void Cache::save2Device(QIODevice *device, const QByteArray& splitStr) {
         mutex.lock();
-        for (auto& message: messages) {
-            historyLogs.append(message);
+        for (int i = 0; i < messages.size(); i++) {
+            device->write(messages[i]);
+            if (i < messages.size() - 1) {
+                device->write(splitStr);
+            }
         }
         mutex.unlock();
-        postNewLog(historyLogs, socketTarget);
-    }
-
-    void Cache::save2File(const QString &filePath) {
-        QFile logFile(filePath);
-        if (logFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            for (auto& message: messages) {
-                logFile.write(message);
-            }
-            logFile.flush();
-            logFile.close();
-        }
     }
 
     void Cache::postToLocal(Message &message) {
         Console::printMessage(message);
-    }
-
-    QByteArray Cache::packageMessage(Message& message) {
-        auto json = message.dumpToJson();
-        QJsonDocument doc(json);
-        auto jsonStr = doc.toJson(QJsonDocument::Compact);
-        //base64
-        auto bytes = jsonStr;
-        char* compressBuf = (char*) malloc(bytes.size() * 2);
-        auto compressedLen = unishox2_compress_simple(bytes.data(), bytes.size(), compressBuf);
-        compressBuf[compressedLen] = '\0';
-        QByteArray compressedBytes(compressBuf, compressedLen + 1);
-        free(compressBuf);
-        return compressedBytes.toBase64() + ",";
     }
 }

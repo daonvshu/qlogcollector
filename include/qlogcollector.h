@@ -2,12 +2,12 @@
 
 #include <qobject.h>
 #include <qhash.h>
+#include <qiodevice.h>
 
 #include "consolestyle.h"
 
 namespace logcollector {
 
-    class Sender;
     class Cache;
     class QLogCollector : public QObject {
         Q_DISABLE_COPY(QLogCollector)
@@ -17,11 +17,9 @@ namespace logcollector {
 
         QLogCollector& registerLog();
 
-        QLogCollector& publishService(int serviceListeningPort = 60025);
-
         void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-        static void save(const QString& filePath);
+        static void save(QIODevice* device, const QByteArray& splitStr = "\n");
 
     private:
         explicit QLogCollector();
@@ -31,7 +29,6 @@ namespace logcollector {
     private:
         QHash<Qt::HANDLE, QString> threadNames;
 
-        Sender* sender;
         Cache* cache;
     };
 

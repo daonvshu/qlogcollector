@@ -1,6 +1,6 @@
-#include "styledstring.h"
+#include "../include/styledstring.h"
 
-#include "consolestyle.h"
+#include "../include/consolestyle.h"
 
 namespace logcollector {
     StyledString::StyledString(QString log, bool blink, bool underline)
