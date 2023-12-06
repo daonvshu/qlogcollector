@@ -55,7 +55,7 @@ logcollector::styleConfig
 
 初始化并注册日志：
 ```cpp
-logcollector::QLogCollector::instance().publishService().registerLog();
+logcollector::QLogCollector::instance().registerLog();
 ```
 `registerLog`函数内部会调用`qInstallMessageHandler`拦截qDebug输出，如果要主动拦截qDebug，在回调中调用`collectorMessageHandle`
 ```cpp
@@ -76,7 +76,6 @@ int main(int argc, char* argv[]) {
         .ide_clion(false)
         .wordWrap(120)
     ;
-    logcollector::QLogCollector::instance().publishService();
     qInstallMessageHandler(myCustomMessageHandler);
     
     //init your application ...
@@ -119,7 +118,7 @@ styled("log", true, true) //日志内容，是否闪烁（仅支持的控制台�
 #添加qlogcollector模块
 add_subdirectory(3rdparty/qlogcollector/src)
 #或使用CPM添加
-#CPMAddPackage("gh:daonvshu/qlogcollector@1.0.0")
+#CPMAddPackage("gh:daonvshu/qlogcollector@1.x.x")
 #...
 
 #静态链接到qlogcollector
