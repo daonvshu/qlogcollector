@@ -17,6 +17,8 @@ if (WIN32)
     add_definitions(-D_UNICODE)
 endif()
 
+set(CMAKE_DEBUG_POSTFIX "d")
+
 add_library(${PROJECT_NAME}
     qlogcollector.cpp
     cache.cpp
@@ -27,10 +29,41 @@ add_library(${PROJECT_NAME}
     message.cpp
 )
 
-add_library(qlogcollector::server ALIAS ${PROJECT_NAME})
-
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Core)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    $<INSTALL_INTERFACE:include>
+)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC QT_MESSAGELOGCONTEXT)
+
+include(CMakePackageConfigHelpers)
+
+install(TARGETS ${PROJECT_NAME}
+    EXPORT QLogCollectorServerTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/QLogCollectorServerConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/QLogCollectorServerConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/QLogCollectorServer
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/QLogCollectorServerConfig.cmake"
+    DESTINATION lib/cmake/QLogCollectorServer
+)
+
+install(EXPORT QLogCollectorServerTargets
+    FILE QLogCollectorServerTargets.cmake
+    DESTINATION lib/cmake/QLogCollectorServer
+)
