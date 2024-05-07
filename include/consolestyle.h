@@ -1,5 +1,7 @@
 #pragma once
 
+#include <qstring.h>
+
 namespace logcollector {
 
     enum class ConsoleOutputTarget {
@@ -36,6 +38,8 @@ namespace logcollector {
 
         ConsoleOutputStyleConfig& ide_qtcreator();
 
+        ConsoleOutputStyleConfig& projectSourceCodeRootPath(const QString& path);
+
     private:
         ConsoleOutputTarget mOutputTarget;
         bool mSimpleCodeLine;
@@ -45,6 +49,7 @@ namespace logcollector {
         bool mLighterColorEnabled;
         bool mUnderlineEnabled;
         bool win32DebugConsoleWithStdColorStyle;
+        QString codeRootPath;
 
         friend struct Console;
         friend class StyledString;

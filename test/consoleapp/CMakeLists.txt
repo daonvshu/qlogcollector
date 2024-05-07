@@ -7,6 +7,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
+add_compile_definitions(ROOT_PROJECT_PATH="${CMAKE_SOURCE_DIR}")
+
 add_executable(${PROJECT_NAME}
                main.cpp
                ../printtest.h

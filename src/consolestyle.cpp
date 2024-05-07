@@ -152,4 +152,9 @@ namespace logcollector {
         disableLighterStyle();
         return *this;
     }
+
+    ConsoleOutputStyleConfig &ConsoleOutputStyleConfig::projectSourceCodeRootPath(const QString &path) {
+        codeRootPath = path;
+        return *this;
+    }
 }

@@ -6,6 +6,7 @@
 #include <qdebug.h>
 #include <qlogcollector.h>
 #include <qbuffer.h>
+#include <qfile.h>
 
 LogTest::LogTest(QWidget *parent)
     : QWidget(parent)
@@ -57,5 +58,12 @@ void LogTest::on_btn_collect_clicked() {
     byteBuff.open(QIODevice::WriteOnly);
 
     logcollector::QLogCollector::save(&byteBuff, ",");
+
+    QFile file("test.log");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logcollector::QLogCollector::save(&file, ",");
+        file.close();
+    }
+
     qDebug() << buff;
 }

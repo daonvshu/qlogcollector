@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
         //.ide_qtcreator()
         .wordWrap(90)
         //.simpleCodeLine()
+        .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
 #elif defined Q_OS_LINUX
     logcollector::styleConfig
