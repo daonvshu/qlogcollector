@@ -17,13 +17,13 @@ logcollector::styleConfig
     .consoleApp()
     //声明当前程序为窗口应用程序
     .windowApp()
-    //表明当前调试代码的idea为clion，参数runWithPty对应注册表中的开关run.processes.with.pty
+    //表明当前调试代码的IDE为clion，参数runWithPty对应注册表中的开关run.processes.with.pty
     .ide_clion(false)
-    //表明当前调试代码的idea为Visual Studio
+    //表明当前调试代码的IDE为Visual Studio
     .ide_vs()
-    //表明当前调试代码的idea为VSCode
+    //表明当前调试代码的IDE为VSCode
     .ide_vscode()
-    //表明当前调试代码的idea为QtCreator（使用等宽字体以对齐格式化后的日志）
+    //表明当前调试代码的IDE为QtCreator（使用等宽字体以对齐格式化后的日志）
     .ide_qtcreator()
     //禁用高亮样式
     .disableLighterStyle()
@@ -35,6 +35,8 @@ logcollector::styleConfig
     .systemCodePage()
     //文件路径仅使用文件名而不是相对路径
     .simpleCodeLine()
+    //设置源代码工程根路径，设置后将计算文件相对路径用于定位
+    .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
 ;
 ```
 确定编码的ide情况下，仅配置ide相关参数即可：
@@ -44,11 +46,13 @@ logcollector::styleConfig
         .windowApp()
         .ide_clion(false)
         .wordWrap(120)
+        .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
 #elif defined Q_OS_LINUX
     logcollector::styleConfig
         .wordWrap(120)
         .simpleCodeLine()
+        .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
 #endif
 ```
@@ -75,6 +79,7 @@ int main(int argc, char* argv[]) {
         .windowApp()
         .ide_clion(false)
         .wordWrap(120)
+        .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
     qInstallMessageHandler(myCustomMessageHandler);
     
