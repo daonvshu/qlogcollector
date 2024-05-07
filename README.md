@@ -120,15 +120,20 @@ styled("log", true, true) //日志内容，是否闪烁（仅支持的控制台�
 ```cmake
 #...
 
+#定义一个源代码跟目录传递给styleConfig
+add_compile_definitions(ROOT_PROJECT_PATH="${CMAKE_SOURCE_DIR}")
+
 #添加qlogcollector模块
 add_subdirectory(3rdparty/qlogcollector/src)
 #或使用CPM添加
 #CPMAddPackage("gh:daonvshu/qlogcollector@1.x.x")
+#或使用find_package
+#find_package(QLogCollectorServer REQUIRED)
 #...
 
 #静态链接到qlogcollector
 target_link_libraries(${PROJECT_NAME}
     #...
-    qlogcollector::server
+    qlogcollectorserver
 )
 ```
