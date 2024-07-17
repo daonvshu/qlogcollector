@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(qlogcollectorserver VERSION 1.0.4)
+project(qlogcollectorserver VERSION 1.0.5)
 
 set(CMAKE_AUTOMOC ON)
 

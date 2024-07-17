@@ -1,7 +1,7 @@
 #include "../include/console.h"
 
 #include <iostream>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qdatetime.h>
 
 namespace logcollector {
@@ -88,19 +88,21 @@ namespace logcollector {
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
         auto content = message.log;
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP || wordsWrapMode) {
-            QRegExp rx("\x1b\\[(\\d+(;\\d+)*)m");
-            int pos = 0;
+            QRegularExpression re("\x1b\\[(\\d+(;\\d+)*)m");
+            auto it = re.globalMatch(content);
+
             int lastPos = 0;
             QList<ConsoleLogPart> logPart;
             //split log text and color style code
-            while ((pos = rx.indexIn(content, pos)) != -1) {
+            while (it.hasNext()) {
+                auto match = it.next();
+                auto pos = match.capturedStart();
                 //previous string
                 logPart.append(ConsoleLogPart(content.mid(lastPos, pos - lastPos), false));
                 //linux style code
-                logPart.append(ConsoleLogPart(rx.cap(1), true));
+                logPart.append(ConsoleLogPart(match.captured(1), true));
                 //process next
-                pos += rx.matchedLength();
-                lastPos = pos;
+                lastPos = (int)match.capturedEnd();
             }
             logPart.append(ConsoleLogPart(content.mid(lastPos), false));
 
@@ -129,7 +131,7 @@ namespace logcollector {
                         //split
                         int spareLength = count - styleConfig.mLogLineWidth;
                         int index = logPart.at(logPartIndex).length() - spareLength;
-                        QRegExp rx2("[^0-9a-zA-Z\"]");
+                        QRegularExpression rx2("[^0-9a-zA-Z\"]");
                         auto newIndex = logPart.at(logPartIndex).part.lastIndexOf(rx2, index);
                         if (newIndex != -1) {
                             if (index != newIndex) {
