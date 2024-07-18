@@ -4,6 +4,7 @@
 #include "../printtest.h"
 #include "../../include/qlogcollector.h"
 
+#include <qfile.h>
 #include <qdebug.h>
 
 int main(int argc, char* argv[]) {
@@ -27,7 +28,7 @@ int main(int argc, char* argv[]) {
         //.ide_qtcreator()
         .wordWrap(90)
 #endif
-    logcollector::QLogCollector::instance().publishService().registerLog();
+    logcollector::QLogCollector::instance().registerLog();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();
@@ -35,7 +36,11 @@ int main(int argc, char* argv[]) {
     PrintTest::longText();
 
     QTimer::singleShot(1000, &a, [&] {
-        logcollector::QLogCollector::save("test.log");
+        QFile file("test.log");
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            logcollector::QLogCollector::save(&file);
+            file.close();
+        }
         a.quit();
     });
 
