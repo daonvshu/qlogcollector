@@ -88,7 +88,7 @@ namespace logcollector {
         bool wordsWrapMode = styleConfig.mLogLineWidth > 0;
         auto content = message.log;
         if (styleConfig.mOutputTarget == ConsoleOutputTarget::TARGET_WIN32_CONSOLE_APP || wordsWrapMode) {
-            QRegularExpression re("\x1b\\[(\\d+(;\\d+)*)m");
+            static QRegularExpression re("\x1b\\[(\\d+(;\\d+)*)m");
             auto it = re.globalMatch(content);
 
             int lastPos = 0;
@@ -131,7 +131,7 @@ namespace logcollector {
                         //split
                         int spareLength = count - styleConfig.mLogLineWidth;
                         int index = logPart.at(logPartIndex).length() - spareLength;
-                        QRegularExpression rx2("[^0-9a-zA-Z\"]");
+                        static QRegularExpression rx2("[^0-9a-zA-Z\"]");
                         auto newIndex = logPart.at(logPartIndex).part.lastIndexOf(rx2, index);
                         if (newIndex != -1) {
                             if (index != newIndex) {
