@@ -1,32 +1,24 @@
 #include <qapplication.h>
 
 #include "logtest.h"
-#include <qlogcollector.h>
-#include <qdebug.h>
+#include <qlogcollector/server/logcollector.h>
+#include <qlogcollector/server/outputs/fileoutputtarget.h>
+
+QLOGCOLLECTOR_USE_NAMESPACE
 
 int main(int argc, char* argv[]) {
 
     QApplication a(argc, argv);
 
-#ifdef Q_OS_WIN
-    logcollector::styleConfig
-        .windowApp()
-        .ide_clion(false)
-        //.ide_vs()
-        //.ide_vscode()
-        //.ide_qtcreator()
-        .wordWrap(120)
-        //.simpleCodeLine()
-        .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
-    ;
-#elif defined Q_OS_LINUX
-    logcollector::styleConfig
-        //.windowApp()
-        //.ide_qtcreator()
-        .wordWrap(90)
-    ;
-#endif
-    logcollector::QLogCollector::instance().registerLog();
+    LogCollector::styleConfig
+            .wordWrap(115)
+            .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
+        ;
+    LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(Ide::clion));
+    LogCollector::addOutputTarget(new FileOutputTarget(
+        FileOutputConfigBuilder().saveDir(QCoreApplication::applicationDirPath())
+    ));
+    LogCollector::registerLog();
 
     LogTest logTest;
     logTest.show();

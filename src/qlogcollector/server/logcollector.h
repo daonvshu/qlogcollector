@@ -1,0 +1,40 @@
+#pragma once
+
+#include "outputstyleconfig.h"
+#include "outputtarget.h"
+
+#include <qobject.h>
+#include <qiodevice.h>
+
+#include <qlogcollector/comm/global.h>
+
+QLOGCOLLECTOR_BEGIN_NAMESPACE
+
+struct LogCollectorData;
+class QLOGCOLLECTOR_EXPORT LogCollector : public QObject {
+    Q_DISABLE_COPY(LogCollector)
+
+public:
+    static void addOutputTarget(OutputTarget* outputTarget);
+
+    static void setMessageFormat(const QString& format);
+
+    static void registerLog();
+
+    static void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+
+    static void flushLogs();
+
+    static void bindSignalFatal();
+
+private:
+    friend void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
+
+private:
+    static LogCollectorData data;
+
+public:
+    static OutputStyleConfig styleConfig;
+};
+
+QLOGCOLLECTOR_END_NAMESPACE

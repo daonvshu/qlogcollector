@@ -4,7 +4,6 @@
 
 #include <qsysinfo.h>
 #include <qdebug.h>
-#include <qlogcollector.h>
 #include <qbuffer.h>
 #include <qfile.h>
 
@@ -57,6 +56,7 @@ void LogTest::on_btn_collect_clicked() {
     QBuffer byteBuff(&buff);
     byteBuff.open(QIODevice::WriteOnly);
 
+#if 0
     logcollector::QLogCollector::save(&byteBuff, ",");
 
     QFile file("test.log");
@@ -64,6 +64,7 @@ void LogTest::on_btn_collect_clicked() {
         logcollector::QLogCollector::save(&file, ",");
         file.close();
     }
+#endif
 
     qDebug() << buff;
 }

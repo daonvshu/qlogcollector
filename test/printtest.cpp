@@ -4,7 +4,7 @@
 #include <qloggingcategory.h>
 #include <QtConcurrent/QtConcurrent>
 
-#include "../include/styledstring.h"
+#include <qlogcollector/server/colors/styledstring.h>
 
 Q_LOGGING_CATEGORY(mainLog, "main.log")
 
@@ -18,7 +18,7 @@ void PrintTest::debugLevel() {
     qInfo() << "post a info log...... level i";
     qCInfo(mainLog) << "post a log with category...... level i";
 
-    qCritical() << "post a error log...... level e";
+    qCritical() << "post a error log...... level e 1111111111111";
     qCCritical(mainLog) << "post a log with category...... level e";
 }
 
@@ -26,6 +26,7 @@ void PrintTest::printInThread() {
     QtConcurrent::run([&]{
         qDebug() << "post a normal log......";
         qCDebug(mainLog) << "post a log with category...... ";
+        //abort();
     });
 }
 

@@ -2,47 +2,30 @@
 #include <qtimer.h>
 
 #include "../printtest.h"
-#include "../../include/qlogcollector.h"
+#include <qlogcollector/server/logcollector.h>
+#include <qlogcollector/server/outputs/fileoutputtarget.h>
 
-#include <qfile.h>
-#include <qdebug.h>
+QLOGCOLLECTOR_USE_NAMESPACE
 
 int main(int argc, char* argv[]) {
 
     QCoreApplication a(argc, argv);
 
-#ifdef Q_OS_WIN
-    logcollector::styleConfig
-        .consoleApp()
-        .ide_clion(false)
-        //.ide_vs()
-        //.ide_vscode()
-        //.ide_qtcreator()
-        .wordWrap(90)
-        //.simpleCodeLine()
+    LogCollector::styleConfig
+        .wordWrap(115)
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
-#elif defined Q_OS_LINUX
-    logcollector::styleConfig
-        //.consoleApp()
-        //.ide_qtcreator()
-        .wordWrap(90)
-#endif
-    logcollector::QLogCollector::instance().registerLog();
+    LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(Ide::clion));
+    LogCollector::addOutputTarget(new FileOutputTarget(
+        FileOutputConfigBuilder().saveDir(QCoreApplication::applicationDirPath())
+    ));
+    LogCollector::bindSignalFatal();
+    LogCollector::registerLog();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();
     PrintTest::printWithColor();
     PrintTest::longText();
-
-    QTimer::singleShot(1000, &a, [&] {
-        QFile file("test.log");
-        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            logcollector::QLogCollector::save(&file);
-            file.close();
-        }
-        a.quit();
-    });
 
     return a.exec();
 }
