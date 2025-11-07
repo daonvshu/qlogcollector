@@ -79,8 +79,8 @@ FormatPart PatternFormatter::ThreadToken::format(const Message& msg) {
 //--------------------------------------------
 FormatPart PatternFormatter::FileToken::format(const Message& msg) {
     QString content = msg.fileName + ":" + QString::number(msg.codeLine);
-    m_minWidth = qMax(m_minWidth, content.size());
-    return FormatPart(FormatPart::Type::File, content.leftJustified(m_minWidth), false, &m_style);
+    //m_minWidth = qMax(m_minWidth, content.size());
+    return FormatPart(FormatPart::Type::File, content, false, &m_style);
 }
 
 PatternFormatter::PatternFormatter(QObject* parent)
