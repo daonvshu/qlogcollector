@@ -39,15 +39,21 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
     LogCollector::collectorMessageHandle(type, context, msg);
 }
 
-LogCollectorData LogCollector::data;
 OutputStyleConfig LogCollector::styleConfig;
 
+namespace {
+    LogCollectorData& globalData() {
+        static LogCollectorData data;
+        return data;
+    }
+}
+
 void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
-    data.handler->addOutputTarget(outputTarget);
+    globalData().handler->addOutputTarget(outputTarget);
 }
 
 void LogCollector::setMessageFormat(const QString& format) {
-    data.handler->setMessageFormat(format);
+    globalData().handler->setMessageFormat(format);
 }
 
 void LogCollector::registerLog() {
@@ -72,22 +78,22 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
     message.codeLine = context.line;
 
     auto currentThreadId = QThread::currentThreadId();
-    message.threadName = data.threadNames.value(currentThreadId);
+    message.threadName = globalData().threadNames.value(currentThreadId);
     message.threadId = (int64_t)currentThreadId;
 
     message.level = type;
     message.log = msg;
 
-    data.handler->processMessage(message);
+    globalData().handler->processMessage(message);
 
     if (type == QtFatalMsg) {
-        data.handler->flush();
-        data.handler->wait(2000);
+        globalData().handler->flush();
+        globalData().handler->wait(2000);
     }
 }
 
 void LogCollector::flushLogs() {
-    data.handler->flush();
+    globalData().handler->flush();
 }
 
 #ifdef Q_OS_LINUX

@@ -4,13 +4,10 @@
 #include "outputtarget.h"
 
 #include <qobject.h>
-#include <qiodevice.h>
-
 #include <qlogcollector/comm/global.h>
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
-struct LogCollectorData;
 class QLOGCOLLECTOR_EXPORT LogCollector : public QObject {
     Q_DISABLE_COPY(LogCollector)
 
@@ -29,9 +26,6 @@ public:
 
 private:
     friend void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
-
-private:
-    static LogCollectorData data;
 
 public:
     static OutputStyleConfig styleConfig;
