@@ -4,6 +4,7 @@
 #include <qstandardpaths.h>
 #include <qfile.h>
 #include <qtextstream.h>
+#include <qdir.h>
 
 #include "../outputtarget.h"
 
@@ -53,6 +54,12 @@ public:
     }
 
     FileOutputConfig build() const {
+        QDir dir(config.saveDir);
+        if (!dir.exists()) {
+            if (!dir.mkpath(config.saveDir)) {
+                qFatal("Can not create log store directory.");
+            }
+        }
         return config;
     }
 

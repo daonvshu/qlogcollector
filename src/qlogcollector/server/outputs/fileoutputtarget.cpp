@@ -1,6 +1,8 @@
 #include "fileoutputtarget.h"
 
 #include <qdir.h>
+#include <qregularexpression.h>
+#include <qdatetime.h>
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 

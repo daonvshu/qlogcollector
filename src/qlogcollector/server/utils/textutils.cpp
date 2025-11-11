@@ -2,6 +2,9 @@
 
 #include "../logcollector.h"
 
+#include <qregularexpression.h>
+#include <qvector.h>
+
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
 QList<FormatPart> TextUtils::wordwrap(const QList<FormatPart>& messageParts) {

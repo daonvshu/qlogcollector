@@ -1,6 +1,10 @@
 #include "patternformatter.h"
 #include "outputtarget.h"
 
+#include <qdatetime.h>
+#include <qregularexpression.h>
+#include <qsharedpointer.h>
+
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
 FormatPart::FormatPart(Type type, const QString& content, bool lineBreak, ColorFormatter* colorFormatter)
@@ -107,9 +111,17 @@ void PatternFormatter::setFormat(const QString& pattern) {
 
         ColorFormatter style;
         if (!styleArg.isEmpty()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
             const QStringList kvs = styleArg.split(',', Qt::SkipEmptyParts);
+#else
+            const QStringList kvs = styleArg.split(',', QString::SkipEmptyParts);
+#endif
             for (const QString& kv : kvs) {
-                auto pair = kv.split('=', Qt::KeepEmptyParts);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+                const QStringList pair = kv.split('=', Qt::KeepEmptyParts);
+#else
+                const QStringList pair = kv.split('=', QString::KeepEmptyParts);
+#endif
                 QString key = pair.value(0).trimmed().toLower();
                 QString val = pair.value(1).trimmed().toLower();
 
