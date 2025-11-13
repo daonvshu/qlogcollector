@@ -22,7 +22,7 @@ void FileOutputTarget::writePart(const QList<FormatPart>& messageParts, const Me
     }
 
     if (config.machineEncodeMode) {
-        *curStream << message.dumpToJson() << ",";
+        *curStream << message.dumpToJson().toUtf8().toBase64() << ",";
     } else {
         for (const auto &part : messageParts) {
             auto content = part.content;

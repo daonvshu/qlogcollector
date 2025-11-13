@@ -29,7 +29,7 @@ struct LogCollectorData {
         handler = QSharedPointer<MessageHandler>(new MessageHandler);
         handler->start();
         QObject::connect(qApp, &QCoreApplication::aboutToQuit, [this] {
-            handler->quit();
+            handler->exit();
             handler->wait();
         });
     }

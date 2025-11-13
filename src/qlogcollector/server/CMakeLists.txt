@@ -57,6 +57,8 @@ add_library(${PROJECT_NAME} ${_build_type}
     outputs/signaloutputtarget.cpp
     outputs/networkoutputtarget.h
     outputs/networkoutputtarget.cpp
+    outputs/memoryoutputtarget.h
+    outputs/memoryoutputtarget.cpp
 
     utils/textutils.h
     utils/textutils.cpp

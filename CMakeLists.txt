@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(qlogcollector VERSION 1.0.6)
+project(qlogcollector VERSION 1.0.7)
 
 option(QLOGCOLLECTOR_BUILD_STATIC "Build static libraries" ON)
 
