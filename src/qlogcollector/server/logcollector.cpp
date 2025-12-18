@@ -126,18 +126,16 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
 }
 
 void LogCollector::flushLogs() {
-    auto handler = globalData->handler;
-    if (handler == nullptr) {
-        return;
+    if (globalData && globalData->handler) {
+        globalData->handler->flush();
     }
-    handler->flush();
 }
 
 #ifdef Q_OS_LINUX
 static void crashSignalHandler(int sig) {
     const char* msg = "Program crashed! Trying to flush logs...\n";
     ::write(STDERR_FILENO, msg, strlen(msg));
-    //LogCollector::flushLogs();
+    LogCollector::flushLogs();
     signal(SIGSEGV, SIG_DFL);
     raise(SIGSEGV);
 }
