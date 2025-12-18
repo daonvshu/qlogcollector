@@ -21,19 +21,27 @@ QLOGCOLLECTOR_BEGIN_NAMESPACE
 
 struct LogCollectorData {
     QHash<Qt::HANDLE, QString> threadNames;
-    QSharedPointer<MessageHandler> handler;
+    MessageHandler* handler;
 
     LogCollectorData() {
         threadNames.insert(QThread::currentThreadId(), "main");
 
-        handler = QSharedPointer<MessageHandler>(new MessageHandler);
+        handler = new MessageHandler;
         handler->start();
-        QObject::connect(qApp, &QCoreApplication::aboutToQuit, [this] {
-            handler->exit();
+    }
+
+    void handlerQuit() {
+        handler->exit();
+        if (!handler->wait(3000)) {
+            handler->terminate();
             handler->wait();
-        });
+        }
+        delete handler;
+        handler = nullptr;
     }
 };
+
+static LogCollectorData* globalData = nullptr;
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
     LogCollector::collectorMessageHandle(type, context, msg);
@@ -41,26 +49,51 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
 
 OutputStyleConfig LogCollector::styleConfig;
 
-namespace {
-    LogCollectorData& globalData() {
-        static LogCollectorData data;
-        return data;
-    }
-}
-
 void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
-    globalData().handler->addOutputTarget(outputTarget);
+    auto handler = globalData->handler;
+    if (handler == nullptr) {
+        return;
+    }
+    handler->addOutputTarget(outputTarget);
 }
 
 void LogCollector::setMessageFormat(const QString& format) {
-    globalData().handler->setMessageFormat(format);
+    auto handler = globalData->handler;
+    if (handler == nullptr) {
+        return;
+    }
+    handler->setMessageFormat(format);
 }
 
+static bool quitting = false;
 void LogCollector::registerLog() {
+    if (globalData != nullptr) {
+        return;
+    }
+    globalData = new LogCollectorData;
+    connect(qApp, &QCoreApplication::aboutToQuit, [] {
+        if (quitting) return;
+        quitting = true;
+
+        qInstallMessageHandler(nullptr);
+        if (globalData && globalData->handler) {
+            globalData->handlerQuit();
+            delete globalData;
+            globalData = nullptr;
+        }
+    });
     qInstallMessageHandler(customMessageHandler);
 }
 
 void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    if (!globalData) {
+        return;
+    }
+    auto handler = globalData->handler;
+    if (handler == nullptr) {
+        return;
+    }
+
     Message message;
     message.timePoint = QDateTime::currentMSecsSinceEpoch();
     message.category = context.category;
@@ -78,29 +111,33 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
     message.codeLine = context.line;
 
     auto currentThreadId = QThread::currentThreadId();
-    message.threadName = globalData().threadNames.value(currentThreadId);
+    message.threadName = globalData->threadNames.value(currentThreadId);
     message.threadId = (int64_t)currentThreadId;
 
     message.level = type;
     message.log = msg;
 
-    globalData().handler->processMessage(message);
+    handler->processMessage(message);
 
     if (type == QtFatalMsg) {
-        globalData().handler->flush();
-        globalData().handler->wait(2000);
+        handler->flush();
+        handler->wait(2000);
     }
 }
 
 void LogCollector::flushLogs() {
-    globalData().handler->flush();
+    auto handler = globalData->handler;
+    if (handler == nullptr) {
+        return;
+    }
+    handler->flush();
 }
 
 #ifdef Q_OS_LINUX
 static void crashSignalHandler(int sig) {
     const char* msg = "Program crashed! Trying to flush logs...\n";
     ::write(STDERR_FILENO, msg, strlen(msg));
-    LogCollector::flushLogs();
+    //LogCollector::flushLogs();
     signal(SIGSEGV, SIG_DFL);
     raise(SIGSEGV);
 }
