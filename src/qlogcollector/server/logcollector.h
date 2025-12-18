@@ -12,11 +12,13 @@ class QLOGCOLLECTOR_EXPORT LogCollector : public QObject {
     Q_DISABLE_COPY(LogCollector)
 
 public:
+    static void init();
+
+    static void registerLog();
+
     static void addOutputTarget(OutputTarget* outputTarget);
 
     static void setMessageFormat(const QString& format);
-
-    static void registerLog();
 
     static void collectorMessageHandle(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 

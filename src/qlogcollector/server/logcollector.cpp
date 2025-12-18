@@ -49,22 +49,8 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
 
 OutputStyleConfig LogCollector::styleConfig;
 
-void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
-    if (globalData == nullptr || globalData->handler == nullptr) {
-        qFatal("QLogCollector initialization failed, need to call `registerLog` first.");
-    }
-    globalData->handler->addOutputTarget(outputTarget);
-}
-
-void LogCollector::setMessageFormat(const QString& format) {
-    if (globalData == nullptr || globalData->handler == nullptr) {
-        qFatal("QLogCollector initialization failed, need to call `registerLog` first.");
-    }
-    globalData->handler->setMessageFormat(format);
-}
-
 static bool quitting = false;
-void LogCollector::registerLog() {
+void LogCollector::init() {
     if (globalData != nullptr) {
         return;
     }
@@ -80,7 +66,25 @@ void LogCollector::registerLog() {
             globalData = nullptr;
         }
     });
+}
+
+void LogCollector::registerLog() {
+    init();
     qInstallMessageHandler(customMessageHandler);
+}
+
+void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
+    if (globalData == nullptr || globalData->handler == nullptr) {
+        qFatal("QLogCollector initialization failed, need to call `init` or `registerLog` first.");
+    }
+    globalData->handler->addOutputTarget(outputTarget);
+}
+
+void LogCollector::setMessageFormat(const QString& format) {
+    if (globalData == nullptr || globalData->handler == nullptr) {
+        qFatal("QLogCollector initialization failed, need to call `init` or `registerLog` first.");
+    }
+    globalData->handler->setMessageFormat(format);
 }
 
 void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
