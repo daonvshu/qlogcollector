@@ -50,19 +50,17 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
 OutputStyleConfig LogCollector::styleConfig;
 
 void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
-    auto handler = globalData->handler;
-    if (handler == nullptr) {
-        return;
+    if (globalData == nullptr || globalData->handler == nullptr) {
+        qFatal("QLogCollector initialization failed, need to call `registerLog` first.");
     }
-    handler->addOutputTarget(outputTarget);
+    globalData->handler->addOutputTarget(outputTarget);
 }
 
 void LogCollector::setMessageFormat(const QString& format) {
-    auto handler = globalData->handler;
-    if (handler == nullptr) {
-        return;
+    if (globalData == nullptr || globalData->handler == nullptr) {
+        qFatal("QLogCollector initialization failed, need to call `registerLog` first.");
     }
-    handler->setMessageFormat(format);
+    globalData->handler->setMessageFormat(format);
 }
 
 static bool quitting = false;
