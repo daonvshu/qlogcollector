@@ -22,26 +22,29 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     //...
     LogCollector::styleConfig
-        .wordWrap(120) //限制单行字符宽度
-        .simpleCodeLine() //显示简单文件名，不包含路径
-        .systemCodePage() //使用系统编码
+        .wordWrap(120) //限制单行字符宽度（可选）
+        .simpleCodeLine() //显示简单文件名，不包含路径（可选）
+        .systemCodePage() //使用系统编码（可选）
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH) //设置源代码工程根路径，设置后将计算文件相对路径用于定位
     ;
+    //注册QDebug日志
+    LogCollector::registerLog();
     //添加控制台输出目标
     LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(Ide::clion));
+    //添加内存输出目标
+    auto memoryOutput = new MemoryOutputTarget;
+    LogCollector::addOutputTarget(memoryOutput);
     //添加文件输出目标
     LogCollector::addOutputTarget(new FileOutputTarget(
         FileOutputConfigBuilder()
             .baseFileName("my_log") //设置文件名前缀
-            .contentLimitLines(1000) //限制文件内容行数
-            .fileLimitSize(10) //限制文件个数
-            .machineEncodeMode(true) //使用json结构化字符串并base64编码保存到文件
-            .saveDir(QCoreApplication::applicationDirPath()) //设置保存文件目录
+            .contentLimitLines(1000) //限制文件内容行数（可选）
+            .fileLimitSize(10) //限制文件个数（可选）
+            .machineEncodeMode(true) //使用json结构化字符串并base64编码保存到文件（可选）
+            .saveDir(QCoreApplication::applicationDirPath()) //设置保存文件目录（可选）
     ));
     //绑定异常信号
     LogCollector::bindSignalFatal();
-    //注册QDebug日志
-    LogCollector::registerLog();
 }
 ```
 
