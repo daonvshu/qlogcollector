@@ -10,6 +10,7 @@ OutputStyleConfig::OutputStyleConfig()
     , useSystemCodePage(false)
     , mLighterColorEnabled(true)
     , mUnderlineEnabled(true)
+    , mNonAsciiCheckEnabled(false)
 {}
 
 OutputStyleConfig &OutputStyleConfig::simpleCodeLine() {
@@ -24,6 +25,11 @@ OutputStyleConfig &OutputStyleConfig::disableLighterStyle() {
 
 OutputStyleConfig &OutputStyleConfig::disableUnderlineStyle() {
     mUnderlineEnabled = false;
+    return *this;
+}
+
+OutputStyleConfig& OutputStyleConfig::disableNonAscii() {
+    mNonAsciiCheckEnabled = true;
     return *this;
 }
 

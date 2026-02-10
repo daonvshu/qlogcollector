@@ -72,7 +72,7 @@ FormatPart PatternFormatter::MessageToken::format(const Message& msg) {
 FormatPart PatternFormatter::ThreadToken::format(const Message& msg) {
     QString threadName = msg.threadName;
     if (threadName.isEmpty()) {
-        threadName = QString("T%1").arg(msg.threadId);
+        threadName = QString("T%1").arg(msg.threadId, 0, 16);
     }
     m_minWidth = qMax(m_minWidth, threadName.size());
     return FormatPart(FormatPart::Type::Thread, threadName.leftJustified(m_minWidth), false, &m_style);

@@ -42,6 +42,7 @@ private:
 private:
     void writeMessage(const QList<Message>& buffer);
     void flushAllTargets(bool force);
+    static QString sanitizeLogMessage(QString message);
 };
 
 QLOGCOLLECTOR_END_NAMESPACE

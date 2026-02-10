@@ -15,12 +15,12 @@ int main(int argc, char* argv[]) {
         .wordWrap(115)
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
     ;
+    LogCollector::registerLog();
     LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(Ide::clion));
     LogCollector::addOutputTarget(new FileOutputTarget(
         FileOutputConfigBuilder().saveDir(QCoreApplication::applicationDirPath())
     ));
     LogCollector::bindSignalFatal();
-    LogCollector::registerLog();
 
     PrintTest::debugLevel();
     PrintTest::printInThread();

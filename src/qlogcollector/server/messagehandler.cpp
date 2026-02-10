@@ -1,5 +1,9 @@
 #include "messagehandler.h"
 
+#include <logcollector.h>
+
+#include "outputstyleconfig.h"
+
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
 MessageHandler::MessageHandler(QObject* parent)
@@ -18,7 +22,20 @@ void MessageHandler::setMessageFormat(const QString& format) {
 
 void MessageHandler::processMessage(const Message& message) {
     QMutexLocker locker(&messageMutex);
-    messages.append(message);
+    bool allowNonAscii = message.log.startsWith(QChar(0x2060));
+    if (LogCollector::styleConfig.mNonAsciiCheckEnabled && !allowNonAscii) {
+        auto filterMsg = message;
+        filterMsg.log = sanitizeLogMessage(filterMsg.log);
+        messages.append(filterMsg);
+    } else {
+        if (allowNonAscii) {
+            auto filterMsg = message;
+            filterMsg.log = message.log.mid(2);
+            messages.append(filterMsg);
+        } else {
+            messages.append(message);
+        }
+    }
     messageCondition.notify_all();
 }
 
@@ -83,6 +100,11 @@ void MessageHandler::flushAllTargets(bool force) {
             target->flush();
         }
     }
+}
+
+QString MessageHandler::sanitizeLogMessage(QString message) {
+    static QRegularExpression nonAsciiPattern("[^\\x00-\\x7F]+");
+    return message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
 }
 
 QLOGCOLLECTOR_END_NAMESPACE

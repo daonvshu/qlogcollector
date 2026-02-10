@@ -20,6 +20,8 @@ public:
 
     OutputStyleConfig& disableUnderlineStyle();
 
+    OutputStyleConfig& disableNonAscii();
+
     OutputStyleConfig& projectSourceCodeRootPath(const QString& path);
 
 private:
@@ -30,11 +32,13 @@ private:
     bool useSystemCodePage;
     bool mLighterColorEnabled;
     bool mUnderlineEnabled;
+    bool mNonAsciiCheckEnabled;
 
     friend class LogCollector;
     friend class OutputTarget;
     friend class ColorFormatter;
     friend class TextUtils;
+    friend class MessageHandler;
 };
 
 QLOGCOLLECTOR_END_NAMESPACE

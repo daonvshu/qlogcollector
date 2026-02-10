@@ -137,3 +137,7 @@ QLogCollector::StyledString styled(const QString& log, bool blink, bool underlin
     return QLogCollector::StyledString(log, blink, underline);
 }
 
+QLogCollector::StyledString allowNonAsciiPrint() {
+    return QLogCollector::StyledString(QChar(0x2060), false, false);
+}
+

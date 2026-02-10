@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
         .wordWrap(120) //限制单行字符宽度（可选）
         .simpleCodeLine() //显示简单文件名，不包含路径（可选）
         .systemCodePage() //使用系统编码（可选）
+        .disableNonAscii() //启用非ascii字符打印检查（可选）
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH) //设置源代码工程根路径，设置后将计算文件相对路径用于定位
     ;
     //注册QDebug日志
@@ -69,6 +70,7 @@ int main(int argc, char* argv[]) {
         .wordWrap(120) //限制单行字符宽度（可选）
         .simpleCodeLine() //显示简单文件名，不包含路径（可选）
         .systemCodePage() //使用系统编码（可选）
+        .disableNonAscii() //启用非ascii字符打印检查（可选）
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH) //设置源代码工程根路径，设置后将计算文件相对路径用于定位
     ;
     //注册QDebug日志

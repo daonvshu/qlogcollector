@@ -13,12 +13,13 @@ int main(int argc, char* argv[]) {
     LogCollector::styleConfig
             .wordWrap(115)
             .projectSourceCodeRootPath(ROOT_PROJECT_PATH)
+            .disableNonAscii()
         ;
+    LogCollector::registerLog();
     LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(Ide::clion));
     LogCollector::addOutputTarget(new FileOutputTarget(
         FileOutputConfigBuilder().saveDir(QCoreApplication::applicationDirPath())
     ));
-    LogCollector::registerLog();
 
     LogTest logTest;
     logTest.show();
