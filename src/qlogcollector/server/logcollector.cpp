@@ -32,6 +32,10 @@ struct LogCollectorData {
 
     void handlerQuit() {
         handler->exit();
+        if (QThread::currentThread() == handler) {
+            handler->requestInterruption();
+            return;
+        }
         if (!handler->wait(3000)) {
             handler->terminate();
             handler->wait();
@@ -123,7 +127,9 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
 
     if (type == QtFatalMsg) {
         handler->flush();
-        handler->wait(2000);
+        if (QThread::currentThread() != handler) {
+            handler->wait(2000);
+        }
     }
 }
 
