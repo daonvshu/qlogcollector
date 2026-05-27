@@ -1,6 +1,7 @@
 #include "messagehandler.h"
 
 #include <logcollector.h>
+#include <qregularexpression.h>
 
 #include "outputstyleconfig.h"
 
