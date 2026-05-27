@@ -61,6 +61,46 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+### 初始化（快速方式）
+
+```c++
+#include <qlogcollector/server/logcollector.h>
+
+QLOGCOLLECTOR_USE_NAMESPACE
+
+int main(int argc, char* argv[]) { 
+    QApplication a(argc, argv);
+    //...
+    LogCollector::quickStart()
+        .style(ROOT_PROJECT_PATH, 120)
+        .console(Ide::clion)
+        .memoryOutput() //内存输出（可选）
+        .fileOutput(QCoreApplication::applicationDirPath()) //文件输出（可选）
+        .tracerOutput() //trace输出（可选）, 如果与FileOutputTarget同时使用，TracerOutputTarget参数会跟随FileOutputTarget
+        .bindFatalSignal(true)
+        .start();
+
+    //如果启用了memoryOutput，可在需要的地方直接获取
+    auto memoryOutput = LogCollector::getMemoryOutput();
+    if (memoryOutput != nullptr) {
+        auto caches = memoryOutput->getMessageCaches();
+        //...
+    }
+}
+```
+
+快速方式中，`style(...)`参数说明：
+- 第1个参数：`projectRootPath`（必选）
+- 第2个参数：`wordWrap`（必选）
+- 第3个参数：`simpleCodeLine`（可选，默认`false`）
+- 第4个参数：`systemCodePage`（可选，默认`false`）
+- 第5个参数：`nonAsciiCheck`（可选，默认`false`）
+
+快速方式中，Output参数化方法：
+- `.fileOutput(saveDir, baseFileName = "log", contentLimitLines = 1000, fileLimitSize = 10, machineEncodeMode = false)`
+- `.tracerOutput(saveDir = "", baseFileName = "log", contentLimitLines = 1000, fileLimitSize = 10)`
+- `.memoryOutput(limitSize = 3000, styledText = false)`
+
 使用自己的`MessageHandler`
 ```c++
 #include <qlogcollector/server/logcollector.h>
