@@ -16,6 +16,7 @@ target_link_libraries(${PROJECT_NAME} QLogCollector::Server)
 #include <qlogcollector/server/logcollector.h>
 #include <qlogcollector/server/outputs/fileoutputtarget.h>
 #include <qlogcollector/server/outputs/memoryoutputtarget.h>
+#include <qlogcollector/server/outputs/traceroutputtarget.h>
 
 QLOGCOLLECTOR_USE_NAMESPACE
 
@@ -45,6 +46,16 @@ int main(int argc, char* argv[]) {
             .machineEncodeMode(true) //使用json结构化字符串并base64编码保存到文件（可选）
             .saveDir(QCoreApplication::applicationDirPath()) //设置保存文件目录（可选）
     ));
+    //添加trace输出目标（可选）
+    //启用后日志末尾会追加trace_id，并将trace详情写入csv文件
+    //如果与FileOutputTarget同时使用，TracerOutputTarget参数会跟随FileOutputTarget
+    LogCollector::addOutputTarget(new TracerOutputTarget(
+        TracerOutputConfigBuilder()
+            .baseFileName("my_log") //设置文件名前缀（可选）
+            .contentLimitLines(1000) //限制文件内容行数（可选）
+            .fileLimitSize(10) //限制文件个数（可选）
+            .saveDir(QCoreApplication::applicationDirPath()) //设置保存文件目录（可选）
+    ));
     //绑定异常信号
     LogCollector::bindSignalFatal();
 }
@@ -55,6 +66,7 @@ int main(int argc, char* argv[]) {
 #include <qlogcollector/server/logcollector.h>
 #include <qlogcollector/server/outputs/fileoutputtarget.h>
 #include <qlogcollector/server/outputs/memoryoutputtarget.h>
+#include <qlogcollector/server/outputs/traceroutputtarget.h>
 
 QLOGCOLLECTOR_USE_NAMESPACE
 
@@ -89,12 +101,58 @@ int main(int argc, char* argv[]) {
             .machineEncodeMode(true) //使用json结构化字符串并base64编码保存到文件（可选）
             .saveDir(QCoreApplication::applicationDirPath()) //设置保存文件目录（可选）
     ));
+    //添加trace输出目标（可选）
+    //如果与FileOutputTarget同时使用，TracerOutputTarget参数会跟随FileOutputTarget
+    LogCollector::addOutputTarget(new TracerOutputTarget(
+        TracerOutputConfigBuilder()
+            .baseFileName("my_log")
+            .saveDir(QCoreApplication::applicationDirPath())
+    ));
     //绑定异常信号
     LogCollector::bindSignalFatal();
     //自定义消息处理
     qInstallMessageHandler(myCustomMessageHandler);
 }
 ```
+
+### Trace调用链记录
+
+包含`"tracescope.h"`头文件，在函数入口直接使用`QLOG_TRACE_SCOPE`：
+
+```cpp
+#include <qlogcollector/server/tracescope.h>
+
+void foo() {
+    QLOG_TRACE_SCOPE;
+    qDebug() << "log in foo";
+}
+```
+
+跨线程传递trace上下文：
+
+```cpp
+auto ctx = LogCollector::exportTraceContext();
+QtConcurrent::run([ctx]{
+    LogCollector::importTraceContext(ctx);
+    QLOG_TRACE_SCOPE;
+    qDebug() << "log in worker thread";
+    LogCollector::clearTraceContext(); //结束当前线程链路传递
+});
+```
+
+说明：
+- 仅当添加了`TracerOutputTarget`时，trace信息才会被记录。
+- 普通日志末尾只附加`trace_id`，trace详情写入`*_trace_YYYY-MM-DD_N.csv`。
+- 当`FileOutputTarget`和`TracerOutputTarget`同时启用时，trace文件会跟随日志文件使用相同分包参数。
+
+### Trace解码工具
+
+项目根目录提供单文件静态页面：`tool/trace_decoder.html`。
+
+使用方式：
+- 用Chromium内核浏览器打开`tool/trace_decoder.html`。
+- 选择trace文件夹（包含`*_trace_*.csv`）。
+- 输入`trace_id`后解码，即可查看原始json和结构化详情。
 
 ### 日志打印格式化
 
