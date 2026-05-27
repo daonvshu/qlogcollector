@@ -2,17 +2,21 @@
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
+static RollingFileOutputTargetBase::RollingConfig makeRollingConfig(const TracerOutputConfig& config) {
+    RollingFileOutputTargetBase::RollingConfig rolling;
+    rolling.saveDir = config.saveDir;
+    rolling.baseFileName = config.baseFileName;
+    rolling.contentLimitLines = config.contentLimitLines;
+    rolling.fileLimitSize = config.fileLimitSize;
+    return rolling;
+}
+
 TracerOutputTarget::TracerOutputTarget(const TracerOutputConfigBuilder& configBuilder)
     : TracerOutputTarget(configBuilder.build())
 {}
 
 TracerOutputTarget::TracerOutputTarget(const TracerOutputConfig& config)
-    : RollingFileOutputTargetBase({
-        config.saveDir,
-        config.baseFileName,
-        config.contentLimitLines,
-        config.fileLimitSize
-    })
+    : RollingFileOutputTargetBase(makeRollingConfig(config))
     , config(config)
 {}
 
@@ -45,12 +49,12 @@ void TracerOutputTarget::followFileOutputConfig(const FileOutputConfig& fileConf
     config.fileLimitSize = fileConfig.fileLimitSize;
     persistedTraceIds.clear();
 
-    applyRollingConfig({
-        config.saveDir,
-        config.baseFileName,
-        config.contentLimitLines,
-        config.fileLimitSize
-    });
+    RollingFileOutputTargetBase::RollingConfig rolling;
+    rolling.saveDir = config.saveDir;
+    rolling.baseFileName = config.baseFileName;
+    rolling.contentLimitLines = config.contentLimitLines;
+    rolling.fileLimitSize = config.fileLimitSize;
+    applyRollingConfig(rolling);
 }
 
 QString TracerOutputTarget::fileSuffix() const {

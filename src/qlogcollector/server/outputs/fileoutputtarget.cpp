@@ -2,17 +2,21 @@
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
+static RollingFileOutputTargetBase::RollingConfig makeRollingConfig(const FileOutputConfig& config) {
+    RollingFileOutputTargetBase::RollingConfig rolling;
+    rolling.saveDir = config.saveDir;
+    rolling.baseFileName = config.baseFileName;
+    rolling.contentLimitLines = config.contentLimitLines;
+    rolling.fileLimitSize = config.fileLimitSize;
+    return rolling;
+}
+
 FileOutputTarget::FileOutputTarget(const FileOutputConfigBuilder& configBuilder)
     : FileOutputTarget(configBuilder.build())
 {}
 
 FileOutputTarget::FileOutputTarget(const FileOutputConfig& config)
-    : RollingFileOutputTargetBase({
-        config.saveDir,
-        config.baseFileName,
-        config.contentLimitLines,
-        config.fileLimitSize
-    })
+    : RollingFileOutputTargetBase(makeRollingConfig(config))
     , config(config)
 {}
 
