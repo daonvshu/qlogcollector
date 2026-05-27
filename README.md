@@ -188,6 +188,7 @@ QtConcurrent::run([ctx]{
 ### Trace解码工具
 
 项目根目录提供单文件静态页面：`tool/trace_decoder.html`。
+也可以直接使用在线页面：[https://daonvshu.github.io/qlogcollector/trace_decoder.html](https://daonvshu.github.io/qlogcollector/trace_decoder.html)。
 
 使用方式：
 - 用Chromium内核浏览器打开`tool/trace_decoder.html`。
