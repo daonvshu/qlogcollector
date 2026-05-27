@@ -4,6 +4,7 @@
 #include "tracescope.h"
 #include "outputs/fileoutputtarget.h"
 #include "outputs/traceroutputtarget.h"
+#include "outputs/memoryoutputtarget.h"
 
 #include <qlogcollector/comm/message.h>
 
@@ -28,6 +29,7 @@ struct LogCollectorData {
     MessageHandler* handler;
     FileOutputTarget* fileOutputTarget = nullptr;
     TracerOutputTarget* tracerOutputTarget = nullptr;
+    MemoryOutputTarget* memoryOutputTarget = nullptr;
     QAtomicInteger<qint64> traceSeq = 0;
 
     LogCollectorData() {
@@ -59,6 +61,133 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext& context, con
 }
 
 OutputStyleConfig LogCollector::styleConfig;
+
+LogCollector::Bootstrap::Bootstrap()
+    : styleConfigData(LogCollector::styleConfig)
+{
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::style(const OutputStyleConfig& config) {
+    styleConfigData = config;
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::style(const QString& projectRootPath, int wordWrap,
+                                                        bool simpleCodeLine,
+                                                        bool systemCodePage,
+                                                        bool nonAsciiCheck) {
+    styleConfigData = OutputStyleConfig{};
+    styleConfigData.wordWrap(wordWrap).projectSourceCodeRootPath(projectRootPath);
+    if (simpleCodeLine) {
+        styleConfigData.simpleCodeLine();
+    }
+    if (systemCodePage) {
+        styleConfigData.systemCodePage();
+    }
+    if (nonAsciiCheck) {
+        styleConfigData.disableNonAscii();
+    }
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::messageFormat(const QString& format) {
+    msgFormat = format;
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::console(Ide ide, bool runWithPty) {
+    this->ide = ide;
+    this->runWithPty = runWithPty;
+    this->useConsole = true;
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::output(OutputTarget* outputTarget) {
+    outputs.append(outputTarget);
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::fileOutput(const QString& saveDir,
+                                                             const QString& baseFileName,
+                                                             int contentLimitLines,
+                                                             int fileLimitSize,
+                                                             bool machineEncodeMode) {
+    outputs.append(new FileOutputTarget(
+        FileOutputConfigBuilder()
+            .saveDir(saveDir)
+            .baseFileName(baseFileName)
+            .contentLimitLines(contentLimitLines)
+            .fileLimitSize(fileLimitSize)
+            .machineEncodeMode(machineEncodeMode)
+    ));
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::tracerOutput(const QString& saveDir,
+                                                               const QString& baseFileName,
+                                                               int contentLimitLines,
+                                                               int fileLimitSize) {
+    QString dir = saveDir;
+    if (dir.isEmpty()) {
+        dir = TracerOutputConfig().saveDir;
+    }
+    outputs.append(new TracerOutputTarget(
+        TracerOutputConfigBuilder()
+            .saveDir(dir)
+            .baseFileName(baseFileName)
+            .contentLimitLines(contentLimitLines)
+            .fileLimitSize(fileLimitSize)
+    ));
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::memoryOutput(int limitSize, bool styledText) {
+    outputs.append(new MemoryOutputTarget(limitSize, styledText));
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::bindFatalSignal(bool enable) {
+    bindFatal = enable;
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::registerQtMessageHandler(bool enable) {
+    registerQtHandler = enable;
+    return *this;
+}
+
+void LogCollector::Bootstrap::start() {
+    LogCollector::styleConfig = styleConfigData;
+    if (registerQtHandler) {
+        LogCollector::registerLog();
+    } else {
+        LogCollector::init();
+    }
+
+    if (!msgFormat.isEmpty()) {
+        LogCollector::setMessageFormat(msgFormat);
+    }
+    if (useConsole) {
+        LogCollector::addOutputTarget(OutputTarget::currentConsoleOutput(ide, runWithPty));
+    }
+    for (auto* output : outputs) {
+        LogCollector::addOutputTarget(output);
+    }
+    if (bindFatal) {
+        LogCollector::bindSignalFatal();
+    }
+}
+
+LogCollector::Bootstrap LogCollector::quickStart() {
+    return Bootstrap{};
+}
+
+MemoryOutputTarget* LogCollector::getMemoryOutput() {
+    if (globalData == nullptr) {
+        return nullptr;
+    }
+    return globalData->memoryOutputTarget;
+}
 
 static bool quitting = false;
 void LogCollector::init() {
@@ -98,6 +227,8 @@ void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
         if (globalData->fileOutputTarget) {
             tracerTarget->followFileOutputConfig(globalData->fileOutputTarget->outputConfig());
         }
+    } else if (auto* memoryTarget = dynamic_cast<MemoryOutputTarget*>(outputTarget)) {
+        globalData->memoryOutputTarget = memoryTarget;
     }
     globalData->handler->addOutputTarget(outputTarget);
 }
