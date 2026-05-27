@@ -9,4 +9,6 @@ public:
     static void printWithColor();
 
     static void longText();
+
+    static void traceContextDemo();
 };

@@ -95,6 +95,10 @@ bool OutputTarget::needFlush() {
 void OutputTarget::flush() {
 }
 
+bool OutputTarget::enableTraceCollection() const {
+    return false;
+}
+
 bool OutputTarget::isSystemCodePage() {
     return LogCollector::styleConfig.useSystemCodePage;
 }

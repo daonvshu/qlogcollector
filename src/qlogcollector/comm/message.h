@@ -17,6 +17,8 @@ struct Message {
     qint64 threadId;
     int level;
     QString log;
+    QString traceId;
+    QString traceContextBase64;
 
     QString dumpToJson() const {
         QJsonObject obj;
@@ -28,6 +30,8 @@ struct Message {
         obj.insert("f", threadId);
         obj.insert("g", level);
         obj.insert("h", log);
+        obj.insert("i", traceId);
+        obj.insert("j", traceContextBase64);
         return QJsonDocument(obj).toJson(QJsonDocument::Compact);
     }
 };

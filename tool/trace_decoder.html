@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trace Decoder</title>
+  <style>
+    :root {
+      --primary: #1677ff;
+      --primary-hover: #4096ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --error: #ff4d4f;
+      --text: #1f1f1f;
+      --text-secondary: #595959;
+      --heading: #262626;
+      --border: #f0f0f0;
+      --bg-layout: #f5f7fa;
+      --bg-card: #ffffff;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --mono: "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: var(--bg-layout);
+    }
+    .topbar {
+      height: 56px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar .title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--heading);
+      letter-spacing: 0.2px;
+    }
+    .topbar .sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .container {
+      max-width: 1240px;
+      margin: 18px auto;
+      padding: 0 16px 24px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+    .card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--heading);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-body {
+      padding: 14px 16px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .input {
+      width: 100%;
+      padding: 8px 11px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all .2s;
+      outline: none;
+      background: #fff;
+    }
+    .input:hover { border-color: var(--primary-hover); }
+    .input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+    }
+    .btn {
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all .2s;
+      background: #fff;
+      color: rgba(0,0,0,.88);
+    }
+    .btn:hover {
+      color: var(--primary);
+      border-color: var(--primary-hover);
+    }
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn.primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #fff;
+    }
+    .status {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .status.ok { color: var(--success); }
+    .status.warn { color: var(--warning); }
+    .status.err { color: var(--error); }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .chip {
+      background: #f5f5f5;
+      color: #434343;
+      border: 1px solid #e8e8e8;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 12px;
+      line-height: 22px;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .split > .card {
+      min-width: 0;
+    }
+    @media (min-width: 1024px) {
+      .split { grid-template-columns: 1.1fr 0.9fr; }
+    }
+    .desc-grid {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 8px 10px;
+      font-size: 14px;
+    }
+    .field-grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 4px 8px;
+      font-size: 12px;
+    }
+    .field-grid .fk { color: var(--text-secondary); }
+    .field-grid .fv {
+      color: #1f1f1f;
+      font-family: var(--mono);
+      word-break: break-all;
+    }
+    .desc-grid .k { color: var(--text-secondary); }
+    .timeline {
+      margin-top: 12px;
+      border-left: 2px solid #d6e4ff;
+      padding-left: 14px;
+    }
+    .timeline-item {
+      position: relative;
+      margin: 10px 0;
+      background: #fafcff;
+      border: 1px solid #edf3ff;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -20px;
+      top: 14px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 3px #e6f4ff;
+    }
+    .timeline-item .t {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--heading);
+    }
+    .timeline-item .m {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: var(--mono);
+      line-height: 1.4;
+    }
+    pre {
+      margin: 0;
+      width: 100%;
+      background: #141414;
+      color: #d6e4ff;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      font-family: var(--mono);
+      max-height: 620px;
+      overflow-x: auto;
+      overflow: auto;
+    }
+    code {
+      font-family: var(--mono);
+      background: #f5f5f5;
+      border: 1px solid #ececec;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">QLog Trace Decoder</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-header">数据源</div>
+      <div class="card-body">
+        <div class="row">
+          <button id="pickDirBtn" class="btn primary">选择 Trace 文件夹</button>
+          <button id="reloadBtn" class="btn">重新扫描</button>
+          <span id="scanStatus" class="status">尚未加载目录</span>
+        </div>
+        <div id="fileChips" class="chips"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">解码</div>
+      <div class="card-body">
+        <label class="label" for="traceIdInput">Trace ID</label>
+        <div class="row">
+          <input id="traceIdInput" class="input" type="text" placeholder="例如：1716900000000_7ff1234_42" />
+          <button id="decodeBtn" class="btn primary">解码 Trace</button>
+        </div>
+        <div id="decodeStatus" class="status" style="margin-top:8px;">等待输入 trace_id</div>
+      </div>
+    </section>
+
+    <section class="split">
+      <section class="card">
+        <div class="card-header">Trace 详情</div>
+        <div class="card-body" id="friendlyView">
+          <div class="status">暂无数据</div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-header">原始 JSON</div>
+        <div class="card-body">
+          <pre id="rawJson">{}</pre>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const state = { dirHandle: null, csvFiles: [], traceMap: new Map() };
+    const pickDirBtn = document.getElementById("pickDirBtn");
+    const reloadBtn = document.getElementById("reloadBtn");
+    const decodeBtn = document.getElementById("decodeBtn");
+    const traceIdInput = document.getElementById("traceIdInput");
+    const scanStatus = document.getElementById("scanStatus");
+    const decodeStatus = document.getElementById("decodeStatus");
+    const fileChips = document.getElementById("fileChips");
+    const rawJson = document.getElementById("rawJson");
+    const friendlyView = document.getElementById("friendlyView");
+
+    pickDirBtn.addEventListener("click", async () => {
+      try {
+        if (!window.showDirectoryPicker) {
+          setScanStatus("err", "当前浏览器不支持目录选择 API，请使用 Chromium 内核浏览器。");
+          return;
+        }
+        state.dirHandle = await window.showDirectoryPicker();
+        await scanDirectory();
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+        setScanStatus("err", "选择目录失败：" + (e.message || e));
+      }
+    });
+    reloadBtn.addEventListener("click", async () => {
+      if (!state.dirHandle) return;
+      await scanDirectory();
+    });
+    decodeBtn.addEventListener("click", decodeCurrentTrace);
+    traceIdInput.addEventListener("keydown", (e) => { if (e.key === "Enter") decodeCurrentTrace(); });
+
+    function setScanStatus(type, text) {
+      scanStatus.className = "status" + (type ? (" " + type) : "");
+      scanStatus.textContent = text;
+    }
+    function setDecodeStatus(type, text) {
+      decodeStatus.className = "status" + (type ? (" " + type) : "");
+      decodeStatus.textContent = text;
+    }
+
+    async function scanDirectory() {
+      state.csvFiles = [];
+      state.traceMap.clear();
+      fileChips.innerHTML = "";
+      setScanStatus("", "正在扫描文件...");
+
+      for await (const entry of state.dirHandle.values()) {
+        if (entry.kind !== "file") continue;
+        if (!entry.name.endsWith(".csv")) continue;
+        if (!entry.name.includes("_trace_")) continue;
+        state.csvFiles.push(entry);
+      }
+
+      if (state.csvFiles.length === 0) {
+        setScanStatus("warn", "未找到 *_trace_*.csv 文件。");
+        return;
+      }
+
+      state.csvFiles.sort((a, b) => a.name.localeCompare(b.name));
+      for (const fileEntry of state.csvFiles) {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = fileEntry.name;
+        fileChips.appendChild(chip);
+      }
+
+      let totalRows = 0;
+      for (const fileEntry of state.csvFiles) {
+        const file = await fileEntry.getFile();
+        const rows = parseCsv(await file.text());
+        for (const row of rows) {
+          if (!row.trace_id || !row.trace_context_base64) continue;
+          totalRows++;
+          state.traceMap.set(row.trace_id, row.trace_context_base64);
+        }
+      }
+
+      setScanStatus("ok", `加载完成：${state.csvFiles.length} 个 CSV，${totalRows} 行记录，${state.traceMap.size} 个 trace_id。`);
+    }
+
+    function parseCsv(text) {
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (lines.length <= 1) return [];
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCsvLine(lines[i]);
+        if (cols.length < 2) continue;
+        result.push({ trace_id: cols[0], trace_context_base64: cols[1] });
+      }
+      return result;
+    }
+    function parseCsvLine(line) {
+      const out = [];
+      let cur = "";
+      let quote = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === "\"") {
+          if (quote && line[i + 1] === "\"") { cur += "\""; i++; }
+          else quote = !quote;
+          continue;
+        }
+        if (ch === "," && !quote) { out.push(cur); cur = ""; continue; }
+        cur += ch;
+      }
+      out.push(cur);
+      return out;
+    }
+
+    function decodeCurrentTrace() {
+      const traceId = traceIdInput.value.trim();
+      if (!traceId) return setDecodeStatus("warn", "请输入 trace_id。");
+      if (state.traceMap.size === 0) return setDecodeStatus("warn", "请先加载 trace 文件夹。");
+      const b64 = state.traceMap.get(traceId);
+      if (!b64) {
+        setDecodeStatus("err", "未找到该 trace_id。");
+        rawJson.textContent = "{}";
+        friendlyView.innerHTML = `<div class="status">暂无数据</div>`;
+        return;
+      }
+      try {
+        const bytes = atob(b64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        const obj = JSON.parse(new TextDecoder("utf-8").decode(arr));
+        setDecodeStatus("ok", "解码成功。");
+        rawJson.textContent = JSON.stringify(obj, null, 2);
+        renderFriendly(obj);
+      } catch (e) {
+        setDecodeStatus("err", "解码失败：" + (e.message || e));
+      }
+    }
+
+    function renderFriendly(obj) {
+      const traceId = obj.trace_id || "-";
+      const depth = obj.depth ?? "-";
+      const rootStart = obj.root_start_ms || 0;
+      const total = obj.total_elapsed_ms ?? "-";
+      const chain = Array.isArray(obj.call_chain) ? obj.call_chain : [];
+      const frames = Array.isArray(obj.frames) ? obj.frames : [];
+      const rootTime = rootStart ? new Date(rootStart).toLocaleString() : "-";
+
+      let html = `
+        <div class="desc-grid">
+          <div class="k">trace_id</div><div><code>${esc(traceId)}</code></div>
+          <div class="k">调用深度</div><div>${esc(String(depth))}</div>
+          <div class="k">root 开始时间</div><div>${esc(rootTime)} (${esc(String(rootStart))})</div>
+          <div class="k">累计耗时</div><div>${esc(String(total))} ms</div>
+          <div class="k">调用链顺序</div><div>当前函数在最上，root 在最下</div>
+        </div>
+      `;
+
+      html += `<div style="margin-top:14px;font-weight:600;">调用链（call_chain）</div>`;
+      if (chain.length === 0) html += `<div class="status warn" style="margin-top:8px;">call_chain 为空</div>`;
+      else {
+        html += `<div class="timeline">`;
+        chain.forEach((it, idx) => {
+          html += `<div class="timeline-item">
+            <div class="t">#${idx + 1} ${esc(String(it))}</div>
+            <div class="m">链路层级：${idx + 1}/${chain.length}</div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `<div style="margin-top:14px;font-weight:600;">详细帧（frames）</div>`;
+      if (frames.length === 0) html += `<div class="status warn" style="margin-top:8px;">frames 为空</div>`;
+      else {
+        const framesBottomUp = [...frames].reverse();
+        html += `<div class="timeline">`;
+        framesBottomUp.forEach((f, idx) => {
+          const title = `${f.func || "-"} (${f.file || "-"}:${f.line ?? "-"})`;
+          const location = `${f.file || "-"}:${f.line ?? "-"}`;
+          const enterMs = Number(f.enter_ms ?? 0);
+          html += `<div class="timeline-item">
+            <div class="t">${esc(title)}</div>
+            <div class="m">frame_index=${idx + 1}/${framesBottomUp.length}</div>
+            <div class="field-grid">
+              <div class="fk">位置（文件名+行号）</div><div class="fv">${esc(location)}</div>
+              <div class="fk">类名</div><div class="fv">${esc(String(f.class || "-"))}</div>
+              <div class="fk">函数名</div><div class="fv">${esc(String(f.func || "-"))}</div>
+              <div class="fk">函数签名</div><div class="fv">${esc(String(f.method || "-"))}</div>
+              <div class="fk">时间</div><div class="fv">${esc(formatDateTimeMs(enterMs))}</div>
+              <div class="fk">从 Root 帧耗时</div><div class="fv">${esc(String(f.elapsed_ms_from_root ?? "-"))} ms</div>
+            </div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      friendlyView.innerHTML = html;
+    }
+
+    function esc(s) {
+      return s.replace(/[&<>"']/g, (ch) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[ch]));
+    }
+
+    function formatDateTimeMs(ms) {
+      if (!Number.isFinite(ms) || ms <= 0) return "-";
+      const d = new Date(ms);
+      const pad2 = (n) => String(n).padStart(2, "0");
+      const pad3 = (n) => String(n).padStart(3, "0");
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} `
+        + `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}.${pad3(d.getMilliseconds())}`;
+    }
+  </script>
+</body>
+</html>

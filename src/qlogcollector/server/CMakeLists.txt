@@ -38,6 +38,8 @@ add_library(${PROJECT_NAME} ${_build_type}
     messagehandler.cpp
     patternformatter.h
     patternformatter.cpp
+    tracescope.h
+    tracescope.cpp
 
     colors/colorattr.h
     colors/colorformatter.h
@@ -53,12 +55,16 @@ add_library(${PROJECT_NAME} ${_build_type}
     outputs/win32debugconsoletarget.cpp
     outputs/fileoutputtarget.h
     outputs/fileoutputtarget.cpp
+    outputs/rollingfileoutputtargetbase.h
+    outputs/rollingfileoutputtargetbase.cpp
     outputs/signaloutputtarget.h
     outputs/signaloutputtarget.cpp
     outputs/networkoutputtarget.h
     outputs/networkoutputtarget.cpp
     outputs/memoryoutputtarget.h
     outputs/memoryoutputtarget.cpp
+    outputs/traceroutputtarget.h
+    outputs/traceroutputtarget.cpp
 
     utils/textutils.h
     utils/textutils.cpp

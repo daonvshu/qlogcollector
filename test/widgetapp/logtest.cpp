@@ -32,6 +32,7 @@ void LogTest::on_post_styled_string_clicked() {
 
 void LogTest::on_post_long_string_clicked() {
     PrintTest::longText();
+    PrintTest::traceContextDemo();
 
     qDebug() << QSysInfo::bootUniqueId();
     qDebug() << QSysInfo::buildAbi();

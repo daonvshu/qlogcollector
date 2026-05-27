@@ -1,87 +1,83 @@
 #pragma once
 
 #include <qobject.h>
+#include <qset.h>
 #include <qstandardpaths.h>
 #include <qdir.h>
 
 #include "rollingfileoutputtargetbase.h"
+#include "fileoutputtarget.h"
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
-struct QLOGCOLLECTOR_EXPORT FileOutputConfig {
+struct QLOGCOLLECTOR_EXPORT TracerOutputConfig {
     QString saveDir;
     QString baseFileName;
     int contentLimitLines;
     int fileLimitSize;
-    bool machineEncodeMode;
 
-    FileOutputConfig()
+    TracerOutputConfig()
         : saveDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/logs")
         , baseFileName("log")
         , contentLimitLines(1000)
         , fileLimitSize(10)
-        , machineEncodeMode(false)
     {}
 };
 
-class QLOGCOLLECTOR_EXPORT FileOutputConfigBuilder {
+class QLOGCOLLECTOR_EXPORT TracerOutputConfigBuilder {
 public:
-    FileOutputConfigBuilder& saveDir(const QString &dir) {
+    TracerOutputConfigBuilder& saveDir(const QString& dir) {
         config.saveDir = dir;
         return *this;
     }
 
-    FileOutputConfigBuilder& baseFileName(const QString &name) {
+    TracerOutputConfigBuilder& baseFileName(const QString& name) {
         config.baseFileName = name;
         return *this;
     }
 
-    FileOutputConfigBuilder& contentLimitLines(int lines) {
+    TracerOutputConfigBuilder& contentLimitLines(int lines) {
         config.contentLimitLines = lines;
         return *this;
     }
 
-    FileOutputConfigBuilder& fileLimitSize(int size) {
+    TracerOutputConfigBuilder& fileLimitSize(int size) {
         config.fileLimitSize = size;
         return *this;
     }
 
-    FileOutputConfigBuilder& machineEncodeMode(bool mode) {
-        config.machineEncodeMode = mode;
-        return *this;
-    }
-
-    FileOutputConfig build() const {
+    TracerOutputConfig build() const {
         QDir dir(config.saveDir);
         if (!dir.exists()) {
             if (!dir.mkpath(config.saveDir)) {
-                qFatal("Can not create log store directory.");
+                qFatal("Can not create trace store directory.");
             }
         }
         return config;
     }
 
 private:
-    FileOutputConfig config;
+    TracerOutputConfig config;
 };
 
-class QLOGCOLLECTOR_EXPORT FileOutputTarget : public RollingFileOutputTargetBase {
+class QLOGCOLLECTOR_EXPORT TracerOutputTarget : public RollingFileOutputTargetBase {
 public:
-    explicit FileOutputTarget(const FileOutputConfigBuilder& configBuilder);
+    explicit TracerOutputTarget(const TracerOutputConfigBuilder& configBuilder);
 
     void writePart(const QList<FormatPart>& messageParts, const Message& message) override;
+    bool enableTraceCollection() const override;
+    void followFileOutputConfig(const FileOutputConfig& fileConfig);
 
-    const FileOutputConfig& outputConfig() const;
+private:
+    explicit TracerOutputTarget(const TracerOutputConfig& config);
+
+    TracerOutputConfig config;
+    QSet<QString> persistedTraceIds;
 
 protected:
     QString fileSuffix() const override;
     QString filePrefix() const override;
     void onFileOpened(QTextStream& textStream) override;
-
-private:
-    explicit FileOutputTarget(const FileOutputConfig& config);
-
-    FileOutputConfig config;
 };
 
 QLOGCOLLECTOR_END_NAMESPACE

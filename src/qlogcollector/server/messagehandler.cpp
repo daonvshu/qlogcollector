@@ -14,6 +14,9 @@ MessageHandler::MessageHandler(QObject* parent)
 
 void MessageHandler::addOutputTarget(OutputTarget* outputTarget) {
     outputTargets << QSharedPointer<OutputTarget>(outputTarget);
+    if (outputTarget->enableTraceCollection()) {
+        traceCollectionEnabled.storeRelease(1);
+    }
 }
 
 void MessageHandler::setMessageFormat(const QString& format) {
@@ -105,6 +108,10 @@ void MessageHandler::flushAllTargets(bool force) {
 QString MessageHandler::sanitizeLogMessage(QString message) {
     static QRegularExpression nonAsciiPattern("[^\\x00-\\x7F]+");
     return message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
+}
+
+bool MessageHandler::isTraceCollectionEnabled() const {
+    return traceCollectionEnabled.loadAcquire() != 0;
 }
 
 QLOGCOLLECTOR_END_NAMESPACE

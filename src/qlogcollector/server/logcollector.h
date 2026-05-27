@@ -26,6 +26,12 @@ public:
 
     static void bindSignalFatal();
 
+    static QString exportTraceContext();
+
+    static void importTraceContext(const QString& context);
+
+    static void clearTraceContext();
+
 private:
     friend void customMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 

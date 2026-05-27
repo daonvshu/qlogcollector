@@ -29,6 +29,8 @@ public:
 
     virtual void flush();
 
+    virtual bool enableTraceCollection() const;
+
 protected:
     static bool isSystemCodePage();
     static bool isLighterColorEnabled();

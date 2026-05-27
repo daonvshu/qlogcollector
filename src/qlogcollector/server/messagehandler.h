@@ -29,6 +29,9 @@ public:
 
     void exit();
 
+    bool isTraceCollectionEnabled() const;
+
+protected:
     void run() override;
 
 private:
@@ -38,6 +41,7 @@ private:
     QWaitCondition messageCondition;
     QList<Message> messages;
     QAtomicInt forceFlush = 0;
+    QAtomicInt traceCollectionEnabled = 0;
 
 private:
     void writeMessage(const QList<Message>& buffer);

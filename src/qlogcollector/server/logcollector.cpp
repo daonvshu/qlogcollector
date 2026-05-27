@@ -1,6 +1,9 @@
 #include "logcollector.h"
 #include "outputstyleconfig.h"
 #include "messagehandler.h"
+#include "tracescope.h"
+#include "outputs/fileoutputtarget.h"
+#include "outputs/traceroutputtarget.h"
 
 #include <qlogcollector/comm/message.h>
 
@@ -11,6 +14,7 @@
 #include <qdir.h>
 #include <qsharedpointer.h>
 #include <qcoreapplication.h>
+#include <qatomic.h>
 
 #ifdef Q_OS_LINUX
 #include <signal.h>
@@ -22,6 +26,9 @@ QLOGCOLLECTOR_BEGIN_NAMESPACE
 struct LogCollectorData {
     QHash<Qt::HANDLE, QString> threadNames;
     MessageHandler* handler;
+    FileOutputTarget* fileOutputTarget = nullptr;
+    TracerOutputTarget* tracerOutputTarget = nullptr;
+    QAtomicInteger<qint64> traceSeq = 0;
 
     LogCollectorData() {
         threadNames.insert(QThread::currentThreadId(), "main");
@@ -81,6 +88,17 @@ void LogCollector::addOutputTarget(OutputTarget* outputTarget) {
     if (globalData == nullptr || globalData->handler == nullptr) {
         qFatal("QLogCollector initialization failed, need to call `init` or `registerLog` first.");
     }
+    if (auto* fileTarget = dynamic_cast<FileOutputTarget*>(outputTarget)) {
+        globalData->fileOutputTarget = fileTarget;
+        if (globalData->tracerOutputTarget) {
+            globalData->tracerOutputTarget->followFileOutputConfig(fileTarget->outputConfig());
+        }
+    } else if (auto* tracerTarget = dynamic_cast<TracerOutputTarget*>(outputTarget)) {
+        globalData->tracerOutputTarget = tracerTarget;
+        if (globalData->fileOutputTarget) {
+            tracerTarget->followFileOutputConfig(globalData->fileOutputTarget->outputConfig());
+        }
+    }
     globalData->handler->addOutputTarget(outputTarget);
 }
 
@@ -121,7 +139,18 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
     message.threadId = (int64_t)currentThreadId;
 
     message.level = type;
+    if (handler->isTraceCollectionEnabled()) {
+        auto baseTraceId = currentTraceId();
+        if (!baseTraceId.isEmpty()) {
+            const auto seq = globalData->traceSeq.fetchAndAddOrdered(1) + 1;
+            message.traceId = baseTraceId + QStringLiteral("_") + QString::number(seq);
+            message.traceContextBase64 = currentTraceContextBase64(message.traceId);
+        }
+    }
     message.log = msg;
+    if (!message.traceId.isEmpty()) {
+        message.log += QStringLiteral(" [trace_id=") + message.traceId + QStringLiteral("]");
+    }
 
     handler->processMessage(message);
 
@@ -131,6 +160,18 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
             handler->wait(2000);
         }
     }
+}
+
+QString LogCollector::exportTraceContext() {
+    return QLogCollector::exportTraceContext();
+}
+
+void LogCollector::importTraceContext(const QString& context) {
+    QLogCollector::importTraceContext(context);
+}
+
+void LogCollector::clearTraceContext() {
+    QLogCollector::clearTraceContext();
 }
 
 void LogCollector::flushLogs() {

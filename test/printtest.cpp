@@ -5,6 +5,8 @@
 #include <QtConcurrent/QtConcurrent>
 
 #include <qlogcollector/server/colors/styledstring.h>
+#include <qlogcollector/server/logcollector.h>
+#include <qlogcollector/server/tracescope.h>
 
 Q_LOGGING_CATEGORY(mainLog, "main.log")
 
@@ -46,4 +48,35 @@ void PrintTest::longText() {
                 "fkasdgfbilaydfbfnasdjkfhbashjdfbasdfasbhjfdgahjkasdnfkasdgfbilaydfbfnasdjkfhbashjdfbasd"
                 "fasbhjfdgahjkasdnfkasdgfbilaydfbfnasdjkfhbashjdfbasdfasbhjfdgahjkasdnfkasdgfbilaydfbfb";
     qDebug() << QString("fnasdjkfhbashjdfbasdfasbhjfdgahjkasdnfkasdgfbilaydfba").repeated(5);
+}
+
+namespace {
+void traceLeaf() {
+    QLOG_TRACE_SCOPE;
+    qDebug() << "trace demo: leaf function log (contains trace_id, detail in trace csv)";
+}
+
+void traceMid() {
+    QLOG_TRACE_SCOPE;
+    traceLeaf();
+}
+
+void traceRoot() {
+    QLOG_TRACE_SCOPE;
+    traceMid();
+}
+}
+
+void PrintTest::traceContextDemo() {
+    QLOG_TRACE_SCOPE;
+    qDebug() << "trace demo: root begin";
+    traceRoot();
+
+    const auto context = QLogCollector::LogCollector::exportTraceContext();
+    QtConcurrent::run([context] {
+        QLogCollector::LogCollector::importTraceContext(context);
+        QLOG_TRACE_SCOPE;
+        qDebug() << "trace demo: cross-thread continued log";
+        QLogCollector::LogCollector::clearTraceContext();
+    });
 }
