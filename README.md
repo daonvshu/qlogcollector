@@ -155,6 +155,35 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+使用自己的`MessageHandler`（快速方式）
+```c++
+#include <qlogcollector/server/logcollector.h>
+
+QLOGCOLLECTOR_USE_NAMESPACE
+
+void myCustomMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    //...
+    LogCollector::collectorMessageHandle(type, context, msg);
+}
+
+int main(int argc, char* argv[]) {
+    QApplication a(argc, argv);
+    //...
+    LogCollector::quickStart()
+        .style(ROOT_PROJECT_PATH, 120)
+        .registerQtMessageHandler(false) //不自动注册Qt默认message handler
+        .console(Ide::clion)
+        .memoryOutput()
+        .fileOutput(QCoreApplication::applicationDirPath(), "my_log")
+        .tracerOutput() //若同时启用FileOutputTarget会自动跟随其参数
+        .bindFatalSignal(true)
+        .start();
+
+    //安装自定义message handler
+    qInstallMessageHandler(myCustomMessageHandler);
+}
+```
+
 ### Trace调用链记录
 
 包含`"tracescope.h"`头文件，在函数入口直接使用`QLOG_TRACE_SCOPE`：
@@ -184,6 +213,8 @@ QtConcurrent::run([ctx]{
 - 仅当添加了`TracerOutputTarget`时，trace信息才会被记录。
 - 普通日志末尾只附加`trace_id`，trace详情写入`*_trace_YYYY-MM-DD_N.csv`。
 - 当`FileOutputTarget`和`TracerOutputTarget`同时启用时，trace文件会跟随日志文件使用相同分包参数。
+- 进入事件循环后触发的函数调用（如`QueuedConnection`、`postEvent`）无法自动延续当前调用链；需要显式使用`exportTraceContext/importTraceContext`传递上下文。
+- 在线程池（如`QtConcurrent`/`QThreadPool`）中执行任务时，任务结束后建议调用`clearTraceContext`；否则线程复用可能导致旧上下文泄漏到后续任务。
 
 ### Trace解码工具
 
