@@ -267,7 +267,7 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
 
     auto currentThreadId = QThread::currentThreadId();
     message.threadName = globalData->threadNames.value(currentThreadId);
-    message.threadId = (int64_t)currentThreadId;
+    message.threadId = (qint64)currentThreadId;
 
     message.level = type;
     if (handler->isTraceCollectionEnabled()) {
