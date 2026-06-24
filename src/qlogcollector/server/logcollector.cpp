@@ -260,7 +260,16 @@ void LogCollector::collectorMessageHandle(QtMsgType type, const QMessageLogConte
             message.fileName = context.file;
         } else {
             QDir dir(styleConfig.codeRootPath);
-            message.fileName = "./" + dir.relativeFilePath(context.file);
+            QString relativeFilePath = dir.relativeFilePath(context.file);
+            if (relativeFilePath.startsWith("..")) {
+                if (styleConfig.mPrint3rdCodeLine) {
+                    message.fileName = "./" + relativeFilePath;
+                } else {
+                    message.fileName = QFileInfo(context.file).fileName();
+                }
+            } else {
+                message.fileName = "./" + relativeFilePath;
+            }
         }
     }
     message.codeLine = context.line;

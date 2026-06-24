@@ -22,6 +22,8 @@ public:
 
     OutputStyleConfig& disableNonAscii();
 
+    OutputStyleConfig& print3rdCodeLine(bool enable = true);
+
     OutputStyleConfig& projectSourceCodeRootPath(const QString& path);
 
 private:
@@ -33,6 +35,7 @@ private:
     bool mLighterColorEnabled;
     bool mUnderlineEnabled;
     bool mNonAsciiCheckEnabled;
+    bool mPrint3rdCodeLine;
 
     friend class LogCollector;
     friend class OutputTarget;

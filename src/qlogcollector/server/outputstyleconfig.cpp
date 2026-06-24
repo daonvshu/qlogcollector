@@ -11,6 +11,7 @@ OutputStyleConfig::OutputStyleConfig()
     , mLighterColorEnabled(true)
     , mUnderlineEnabled(true)
     , mNonAsciiCheckEnabled(false)
+    , mPrint3rdCodeLine(false)
 {}
 
 OutputStyleConfig &OutputStyleConfig::simpleCodeLine() {
@@ -30,6 +31,11 @@ OutputStyleConfig &OutputStyleConfig::disableUnderlineStyle() {
 
 OutputStyleConfig& OutputStyleConfig::disableNonAscii() {
     mNonAsciiCheckEnabled = true;
+    return *this;
+}
+
+OutputStyleConfig& OutputStyleConfig::print3rdCodeLine(bool enable) {
+    mPrint3rdCodeLine = enable;
     return *this;
 }
 
