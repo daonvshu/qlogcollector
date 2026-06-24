@@ -75,7 +75,8 @@ LogCollector::Bootstrap& LogCollector::Bootstrap::style(const OutputStyleConfig&
 LogCollector::Bootstrap& LogCollector::Bootstrap::style(const QString& projectRootPath, int wordWrap,
                                                         bool simpleCodeLine,
                                                         bool systemCodePage,
-                                                        bool nonAsciiCheck) {
+                                                        bool nonAsciiCheck,
+                                                        bool print3rdCodeLine) {
     styleConfigData = OutputStyleConfig{};
     styleConfigData.wordWrap(wordWrap).projectSourceCodeRootPath(projectRootPath);
     if (simpleCodeLine) {
@@ -86,6 +87,9 @@ LogCollector::Bootstrap& LogCollector::Bootstrap::style(const QString& projectRo
     }
     if (nonAsciiCheck) {
         styleConfigData.disableNonAscii();
+    }
+    if (print3rdCodeLine) {
+        styleConfigData.print3rdCodeLine();
     }
     return *this;
 }

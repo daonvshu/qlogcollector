@@ -21,7 +21,8 @@ public:
         Bootstrap& style(const QString& projectRootPath, int wordWrap,
                          bool simpleCodeLine = false,
                          bool systemCodePage = false,
-                         bool nonAsciiCheck = false);
+                         bool nonAsciiCheck = false,
+                         bool print3rdCodeLine = false);
         Bootstrap& messageFormat(const QString& format);
         Bootstrap& console(Ide ide = Ide::unspecified, bool runWithPty = true);
         Bootstrap& output(OutputTarget* outputTarget);
