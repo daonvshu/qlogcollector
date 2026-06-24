@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
         .simpleCodeLine() //显示简单文件名，不包含路径（可选）
         .systemCodePage() //使用系统编码（可选）
         .disableNonAscii() //启用非ascii字符打印检查（可选）
+        .print3rdCodeLine() //打印第三方/项目外代码路径（可选，默认关闭）
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH) //设置源代码工程根路径，设置后将计算文件相对路径用于定位
     ;
     //注册QDebug日志
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     //...
     LogCollector::quickStart()
-        .style(ROOT_PROJECT_PATH, 120)
+        .style(ROOT_PROJECT_PATH, 120, false, false, false, true)
         .console(Ide::clion)
         .memoryOutput() //内存输出（可选）
         .fileOutput(QCoreApplication::applicationDirPath()) //文件输出（可选）
@@ -95,6 +96,7 @@ int main(int argc, char* argv[]) {
 - 第3个参数：`simpleCodeLine`（可选，默认`false`）
 - 第4个参数：`systemCodePage`（可选，默认`false`）
 - 第5个参数：`nonAsciiCheck`（可选，默认`false`）
+- 第6个参数：`print3rdCodeLine`（可选，默认`false`）
 
 快速方式中，Output参数化方法：
 - `.fileOutput(saveDir, baseFileName = "log", contentLimitLines = 1000, fileLimitSize = 10, machineEncodeMode = false)`
@@ -123,6 +125,7 @@ int main(int argc, char* argv[]) {
         .simpleCodeLine() //显示简单文件名，不包含路径（可选）
         .systemCodePage() //使用系统编码（可选）
         .disableNonAscii() //启用非ascii字符打印检查（可选）
+        .print3rdCodeLine() //打印第三方/项目外代码路径（可选，默认关闭）
         .projectSourceCodeRootPath(ROOT_PROJECT_PATH) //设置源代码工程根路径，设置后将计算文件相对路径用于定位
     ;
     //注册QDebug日志
@@ -170,7 +173,7 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     //...
     LogCollector::quickStart()
-        .style(ROOT_PROJECT_PATH, 120)
+        .style(ROOT_PROJECT_PATH, 120, false, false, false, true)
         .registerQtMessageHandler(false) //不自动注册Qt默认message handler
         .console(Ide::clion)
         .memoryOutput()
