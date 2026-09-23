@@ -4,6 +4,8 @@
 
 #include <qlogcollector/comm/global.h>
 
+#include "logthrottle.h"
+
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
 class QLOGCOLLECTOR_EXPORT OutputStyleConfig {
@@ -26,6 +28,11 @@ public:
 
     OutputStyleConfig& projectSourceCodeRootPath(const QString& path);
 
+    OutputStyleConfig& logThrottle(bool enable = true);
+
+    OutputStyleConfig& logThrottle(int initialBurst, int baseIntervalMs,
+                                   int maxIntervalMs, int idleResetMs);
+
 private:
     bool mSimpleCodeLine;
     int mLogLineWidth;
@@ -36,6 +43,7 @@ private:
     bool mUnderlineEnabled;
     bool mNonAsciiCheckEnabled;
     bool mPrint3rdCodeLine;
+    LogThrottleConfig mThrottleConfig;
 
     friend class LogCollector;
     friend class OutputTarget;

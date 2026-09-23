@@ -11,7 +11,9 @@
 #include <qlogcollector/comm/message.h>
 
 #include "outputtarget.h"
+#include "logthrottle.h"
 #include "patternformatter.h"
+#include <qlogcollector/server/colors/colorformatter.h>
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
@@ -37,6 +39,8 @@ protected:
 private:
     QList<QSharedPointer<OutputTarget>> outputTargets;
     PatternFormatter formatter;
+    LogThrottle throttle;
+    ColorFormatter throttleNoteStyle;
     QMutex messageMutex;
     QWaitCondition messageCondition;
     QList<Message> messages;

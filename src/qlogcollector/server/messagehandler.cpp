@@ -11,6 +11,8 @@ MessageHandler::MessageHandler(QObject* parent)
     : QThread(parent)
 {
     setMessageFormat("[%d{HH:mm:ss.zzz}[fg=g]] [%t] %c %p-> %m (%f)");
+    //mark the suppressed count appended to a throttled line, same red as level e
+    throttleNoteStyle.setForeground(ColorAttr::Red, 1);
 }
 
 void MessageHandler::addOutputTarget(OutputTarget* outputTarget) {
@@ -89,9 +91,30 @@ void MessageHandler::run() {
     }
 }
 
+//insert the throttle note right after the log content, so it stays in front of the
+//trailing parts of the pattern such as the code line
+static void insertThrottleNote(QList<FormatPart>& messageParts, const QString& note,
+                               ColorFormatter& noteStyle) {
+    for (int i = 0; i < messageParts.size(); ++i) {
+        if (messageParts[i].type == FormatPart::Type::Message) {
+            messageParts.insert(i + 1, FormatPart(FormatPart::Type::Literal, note, false, &noteStyle));
+            return;
+        }
+    }
+    messageParts.append(FormatPart(FormatPart::Type::Literal, note, false, &noteStyle));
+}
+
 void MessageHandler::writeMessage(const QList<Message>& buffer) {
-    for (const auto& message : buffer) {
+    for (const auto& buffered : buffer) {
+        Message message = buffered;
+        QString throttleNote;
+        if (!throttle.accept(message, LogCollector::styleConfig.mThrottleConfig, &throttleNote)) {
+            continue;
+        }
         auto messagePart = formatter.format(message);
+        if (!throttleNote.isEmpty()) {
+            insertThrottleNote(messagePart, throttleNote, throttleNoteStyle);
+        }
         for (const auto& target : outputTargets) {
             target->writePart(messagePart, message);
         }
@@ -107,8 +130,14 @@ void MessageHandler::flushAllTargets(bool force) {
 }
 
 QString MessageHandler::sanitizeLogMessage(QString message) {
+    //the throttle marker is library internal information, keep it out of the non-ascii check
+    QString marker;
+    if (message.startsWith(logThrottleMarker())) {
+        marker = message.left(logThrottleMarkerLength);
+        message.remove(0, logThrottleMarkerLength);
+    }
     static QRegularExpression nonAsciiPattern("[^\\x00-\\x7F]+");
-    return message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
+    return marker + message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
 }
 
 bool MessageHandler::isTraceCollectionEnabled() const {

@@ -78,6 +78,19 @@
     <string>collect logs</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btn_throttle">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>220</y>
+     <width>161</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>log throttle</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

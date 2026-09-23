@@ -38,6 +38,8 @@ add_library(${PROJECT_NAME} ${_build_type}
     messagehandler.cpp
     patternformatter.h
     patternformatter.cpp
+    logthrottle.h
+    logthrottle.cpp
     tracescope.h
     tracescope.cpp
 

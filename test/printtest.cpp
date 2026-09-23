@@ -2,6 +2,7 @@
 
 #include <qdebug.h>
 #include <qloggingcategory.h>
+#include <qthread.h>
 #include <QtConcurrent/QtConcurrent>
 
 #include <qlogcollector/server/colors/styledstring.h>
@@ -78,5 +79,29 @@ void PrintTest::traceContextDemo() {
         QLOG_TRACE_SCOPE;
         qDebug() << "trace demo: cross-thread continued log";
         QLogCollector::LogCollector::clearTraceContext();
+    });
+}
+
+//The throttle is configured in main.cpp by Bootstrap::logThrottle().
+//This call site writes the marker returned by throttlePrint() at the very beginning
+//of the log statement, so it is throttled: the first 3 logs are printed, then the
+//interval between two printed logs doubles from 300ms up to 5000ms, and every printed
+//log carries the number of logs suppressed in between. Once the call site has been
+//quiet for more than 300ms the state is back to the initial one, so the next burst
+//starts over from its first 3 logs, and the logs the finished burst suppressed are
+//reported once with the "throttle reset" marker. Logs from a call site without the
+//marker are always printed.
+void PrintTest::logThrottleDemo() {
+    const int count = 300;
+
+    qDebug() << "throttle demo: start, the marked call site below posts" << count
+             << "logs in about 7 seconds, only a few of them are printed";
+
+    QtConcurrent::run([count] {
+        for (int i = 0; i < count; ++i) {
+            qDebug() << throttlePrint() << "throttle demo: marked call site log" << i;
+            QThread::msleep(25);
+        }
+        qDebug() << "throttle demo: burst finished," << count << "logs were posted by the marked call site";
     });
 }

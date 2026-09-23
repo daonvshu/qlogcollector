@@ -11,4 +11,6 @@ public:
     static void longText();
 
     static void traceContextDemo();
+
+    static void logThrottleDemo();
 };

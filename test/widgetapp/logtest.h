@@ -17,4 +17,5 @@ private slots:
     void on_post_styled_string_clicked();
     void on_post_long_string_clicked();
     void on_btn_collect_clicked();
+    void on_btn_throttle_clicked();
 };

@@ -59,4 +59,18 @@ OutputStyleConfig &OutputStyleConfig::projectSourceCodeRootPath(const QString &p
     return *this;
 }
 
+OutputStyleConfig &OutputStyleConfig::logThrottle(bool enable) {
+    mThrottleConfig.enabled = enable;
+    return *this;
+}
+
+OutputStyleConfig &OutputStyleConfig::logThrottle(int initialBurst, int baseIntervalMs,
+                                                 int maxIntervalMs, int idleResetMs) {
+    mThrottleConfig.initialBurst = initialBurst;
+    mThrottleConfig.baseIntervalMs = baseIntervalMs;
+    mThrottleConfig.maxIntervalMs = maxIntervalMs;
+    mThrottleConfig.idleResetMs = idleResetMs;
+    return *this;
+}
+
 QLOGCOLLECTOR_END_NAMESPACE

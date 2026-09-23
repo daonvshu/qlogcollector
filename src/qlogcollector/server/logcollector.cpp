@@ -150,6 +150,17 @@ LogCollector::Bootstrap& LogCollector::Bootstrap::memoryOutput(int limitSize, bo
     return *this;
 }
 
+LogCollector::Bootstrap& LogCollector::Bootstrap::logThrottle(bool enable) {
+    styleConfigData.logThrottle(enable);
+    return *this;
+}
+
+LogCollector::Bootstrap& LogCollector::Bootstrap::logThrottle(int initialBurst, int baseIntervalMs,
+                                                              int maxIntervalMs, int idleResetMs) {
+    styleConfigData.logThrottle(initialBurst, baseIntervalMs, maxIntervalMs, idleResetMs);
+    return *this;
+}
+
 LogCollector::Bootstrap& LogCollector::Bootstrap::bindFatalSignal(bool enable) {
     bindFatal = enable;
     return *this;

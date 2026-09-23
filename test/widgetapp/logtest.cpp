@@ -69,3 +69,7 @@ void LogTest::on_btn_collect_clicked() {
 
     qDebug() << buff;
 }
+
+void LogTest::on_btn_throttle_clicked() {
+    PrintTest::logThrottleDemo();
+}

@@ -36,6 +36,9 @@ public:
                                 int contentLimitLines = 1000,
                                 int fileLimitSize = 10);
         Bootstrap& memoryOutput(int limitSize = 3000, bool styledText = false);
+        Bootstrap& logThrottle(bool enable = true);
+        Bootstrap& logThrottle(int initialBurst, int baseIntervalMs,
+                               int maxIntervalMs, int idleResetMs);
         Bootstrap& bindFatalSignal(bool enable = true);
         Bootstrap& registerQtMessageHandler(bool enable = true);
         void start();

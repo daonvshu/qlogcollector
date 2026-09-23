@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
 
     LogCollector::quickStart()
         .style(ROOT_PROJECT_PATH, 115, false, false, true)
+        .logThrottle(3, 300, 5000, 30000)
         .console(Ide::clion)
         .fileOutput(QCoreApplication::applicationDirPath())
         .tracerOutput()

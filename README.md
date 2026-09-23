@@ -290,3 +290,50 @@ styled("log", true, true) //日志内容，是否闪烁（仅支持的控制台�
   .wb()
 ;
 ```
+
+### 日志节流（抑制高频重复打印）
+
+某些调用点在业务里会被反复快速触发，短时间内产生大量重复日志，把正常日志淹没。这类调用点可以按需开启节流：开启后该调用点的打印频率按指数退避降低，被抑制的条数会附在下一次打印出来的日志上。
+
+在调用点写入`throttlePrint()`标记即可开启，用法与`allowNonAsciiPrint()`相同，标记必须放在日志语句的最前面：
+
+```c++
+#include <qlogcollector/server/colors/styledstring.h>
+
+qDebug() << throttlePrint() << "poll failed, retry" << retryCount;
+```
+
+参数在初始化阶段配置，使用`quickStart`时链式调用：
+
+```c++
+LogCollector::quickStart()
+    .style(ROOT_PROJECT_PATH, 120)
+    .logThrottle(3, 1000, 30000, 90000) //日志节流（可选）
+    .console(Ide::clion)
+    .fileOutput(QCoreApplication::applicationDirPath())
+    .start();
+```
+
+使用自己的`MessageHandler`或手动初始化时，通过`styleConfig`配置：
+
+```c++
+LogCollector::styleConfig.logThrottle(3, 1000, 30000, 90000);
+```
+
+`.logThrottle(...)`参数说明（时间单位均为毫秒）：
+
+| 参数 | 含义 | 默认值 |
+|:--:|:--|:--:|
+| 第1个 | `initialBurst`：每轮爆发开始时连续放行的条数 | 3 |
+| 第2个 | `baseIntervalMs`：第一次退避后的放行间隔，同时作为「静默多久算这一轮爆发结束」的阈值 | 1000 |
+| 第3个 | `maxIntervalMs`：放行间隔上限 | 30000 |
+| 第4个 | `idleResetMs`：调用点记录的保留时长，静默超过后丢弃该记录 | 90000 |
+
+也可以用`.logThrottle()`使用默认参数开启，或用`.logThrottle(false)`整体关闭（关闭后标记会被忽略，但依然会从日志正文中剥离）。
+
+行为说明：
+- 只对打了标记的调用点生效，其它日志不受影响。
+- 默认参数下：每轮爆发先放行 3 条，之后放行间隔按 1s→2s→4s→…→30s 递增。
+- 被抑制的条数附在该调用点下一次打印的日志内容之后（红色高亮），例如`[suppressed=12]`；写文件时为纯文本，不会带入颜色转义码。
+- 静默超过`baseIntervalMs`视为这一轮爆发结束，状态回到初始，下一轮从`initialBurst`重新开始；上一轮剩余未报告的条数会以`[throttle reset, suppressed=N]`一并打印。
+- 节流对所有输出目标（控制台/文件/内存等）同样生效。

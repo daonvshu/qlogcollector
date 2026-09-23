@@ -82,6 +82,7 @@ QLOGCOLLECTOR_END_NAMESPACE
 
 extern QLogCollector::StyledString styled(const QString& log, bool blink = false, bool underline = false);
 extern QLogCollector::StyledString allowNonAsciiPrint();
+extern QLogCollector::StyledString throttlePrint();
 
 inline QDebug operator<<(QDebug debug, const QLogCollector::StyledString& styledString) {
     QDebugStateSaver saver(debug);
