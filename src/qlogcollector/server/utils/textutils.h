@@ -42,7 +42,11 @@ struct ContentPart {
 
 class QLOGCOLLECTOR_EXPORT TextUtils {
 public:
-    static QList<FormatPart> wordwrap(const QList<FormatPart>& messageParts);
+    static QList<FormatPart> wordwrap(const QList<FormatPart>& messageParts, bool noWrap = false);
+
+    //Put the framework prefix, the message content and the trailing parts on separate
+    //lines, the content keeps its own line breaks and is never cut by the width limit.
+    static QList<FormatPart> noWrapLayout(const QList<FormatPart>& messageParts);
 
     static QList<ContentPart> toContentParts(const QString& content);
     static QString removeColors(const QString& content);

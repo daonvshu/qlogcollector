@@ -17,6 +17,8 @@ struct Message {
     qint64 threadId;
     int level;
     QString log;
+    bool noWrap = false;    //print the content as it is, without the width wrapper
+    bool throttled = false; //the call site is marked by throttlePrint()
     QString traceId;
     QString traceContextBase64;
 

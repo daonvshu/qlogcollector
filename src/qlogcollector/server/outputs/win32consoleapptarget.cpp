@@ -7,7 +7,7 @@
 #include <iostream>
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
-void Win32ConsoleAppTarget::writePart(const QList<FormatPart>& messageParts, const Message&) {
+void Win32ConsoleAppTarget::writePart(const QList<FormatPart>& messageParts, const Message& message) {
 
 #ifdef Q_OS_WIN
     static HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -38,7 +38,7 @@ void Win32ConsoleAppTarget::writePart(const QList<FormatPart>& messageParts, con
         }
     };
 
-    auto parts = TextUtils::wordwrap(messageParts);
+    auto parts = TextUtils::wordwrap(messageParts, message.noWrap);
     for (auto& part : parts) {
         auto content = part.content;
         if (part.type == FormatPart::Type::Level) {
@@ -46,18 +46,12 @@ void Win32ConsoleAppTarget::writePart(const QList<FormatPart>& messageParts, con
             printStyle(style);
             printContent(content);
             endStyle();
-            continue;
-        }
-
-        if (part.type == FormatPart::Type::File) {
+        } else if (part.type == FormatPart::Type::File) {
             auto style = TextUtils::getFileCodeFormatter(part.colorFormatter);
             printStyle(style);
             printContent(content);
             endStyle();
-            continue;
-        }
-
-        if (part.type != FormatPart::Type::Message) {
+        } else if (part.type != FormatPart::Type::Message) {
             if (part.colorFormatter != nullptr && !part.colorFormatter->isInvalid()) {
                 printStyle(*part.colorFormatter);
                 printContent(content);
@@ -65,34 +59,33 @@ void Win32ConsoleAppTarget::writePart(const QList<FormatPart>& messageParts, con
             } else {
                 printContent(content);
             }
-            continue;
-        }
-
-        auto contentParts = TextUtils::toContentParts(content);
-        bool lastStyleValid = false;
-        for (auto& contentPart : contentParts) {
-            if (contentPart.isStyleCode) {
-                auto codeStr = contentPart.part.split(";");
-                QList<int> codes;
-                for (const auto& c : codeStr) {
-                    codes << c.toInt();
-                }
-                auto style = ColorFormatter::fromLinuxColorCode(codes);
-                if (style.isInvalid()) {
-                    if (lastStyleValid) {
-                        endStyle();
+        } else {
+            auto contentParts = TextUtils::toContentParts(content);
+            bool lastStyleValid = false;
+            for (auto& contentPart : contentParts) {
+                if (contentPart.isStyleCode) {
+                    auto codeStr = contentPart.part.split(";");
+                    QList<int> codes;
+                    for (const auto& c : codeStr) {
+                        codes << c.toInt();
                     }
-                    lastStyleValid = false;
-                } else {
-                    printStyle(style);
-                    lastStyleValid = true;
+                    auto style = ColorFormatter::fromLinuxColorCode(codes);
+                    if (style.isInvalid()) {
+                        if (lastStyleValid) {
+                            endStyle();
+                        }
+                        lastStyleValid = false;
+                    } else {
+                        printStyle(style);
+                        lastStyleValid = true;
+                    }
+                    continue;
                 }
-                continue;
+                printContent(contentPart.part);
             }
-            printContent(contentPart.part);
-        }
-        if (lastStyleValid) {
-            endStyle();
+            if (lastStyleValid) {
+                endStyle();
+            }
         }
         if (part.lineBreak) {
             std::cout << std::endl;

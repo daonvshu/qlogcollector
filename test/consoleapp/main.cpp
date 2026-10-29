@@ -22,6 +22,8 @@ int main(int argc, char* argv[]) {
     PrintTest::printInThread();
     PrintTest::printWithColor();
     PrintTest::longText();
+    PrintTest::multilineText();
+    PrintTest::noWrapText();
     PrintTest::traceContextDemo();
 
     return a.exec();

@@ -91,6 +91,32 @@
     <string>log throttle</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btn_multiline">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>260</y>
+     <width>161</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>multiline log</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_no_wrap">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>300</y>
+     <width>161</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>no wrap print</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

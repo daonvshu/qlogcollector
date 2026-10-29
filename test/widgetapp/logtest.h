@@ -18,4 +18,6 @@ private slots:
     void on_post_long_string_clicked();
     void on_btn_collect_clicked();
     void on_btn_throttle_clicked();
+    void on_btn_multiline_clicked();
+    void on_btn_no_wrap_clicked();
 };

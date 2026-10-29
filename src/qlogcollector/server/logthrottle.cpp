@@ -5,10 +5,6 @@ QLOGCOLLECTOR_BEGIN_NAMESPACE
 //Upper bound of remembered call sites, avoids unbounded growth of marked call sites
 static const int MAX_CALL_SITES = 4096;
 
-QChar logThrottleMarker() {
-    return QChar(0x2063);
-}
-
 void LogThrottle::trimCallSites(qint64 nowMs, const LogThrottleConfig& config) {
     for (auto it = m_callSites.begin(); it != m_callSites.end();) {
         if (nowMs - it->lastSeenMs > config.idleResetMs) {
@@ -31,12 +27,18 @@ void LogThrottle::trimCallSites(qint64 nowMs, const LogThrottleConfig& config) {
 }
 
 bool LogThrottle::accept(Message& message, const LogThrottleConfig& config, QString* note) {
-    if (!message.log.startsWith(logThrottleMarker())) {
+    //the message handler already stripped the marker and set the flag, the marker check
+    //keeps messages handed to the throttle without passing the handler working
+    bool marked = message.throttled;
+    message.throttled = false;
+    if (message.log.startsWith(logThrottleMarker())) {
+        marked = true;
+        //the marker is library internal information, keep it out of the log content in any case
+        message.log = message.log.mid(logThrottleMarkerLength);
+    }
+    if (!marked) {
         return true;
     }
-
-    //the marker is library internal information, keep it out of the log content in any case
-    message.log = message.log.mid(logThrottleMarkerLength);
     if (!config.enabled) {
         return true;
     }

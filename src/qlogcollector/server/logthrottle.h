@@ -1,5 +1,7 @@
 #pragma once
 
+#include "printmarker.h"
+
 #include <qchar.h>
 #include <qglobal.h>
 #include <qhash.h>
@@ -9,14 +11,6 @@
 #include <qlogcollector/comm/message.h>
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
-
-//Out-of-band marker of the call site throttle, used in the same way as
-//allowNonAsciiPrint() with 0x2060: writing it at the beginning of a log
-//statement enables throttling for that call site.
-QLOGCOLLECTOR_EXPORT QChar logThrottleMarker();
-
-//Length of the marker: the marker itself plus the separator space inserted by QDebug
-constexpr int logThrottleMarkerLength = 2;
 
 //Log throttle parameters, all durations are in milliseconds
 struct LogThrottleConfig {

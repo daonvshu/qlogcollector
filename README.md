@@ -262,6 +262,41 @@ LogCollector::setMessageFormat("[%d{HH:mm:ss.zzz}[fg=g]] [%t] %c %p-> %m (%f)");
 [10:09:41.766] [main] main.log D-> post a log with category...... level d                 (./test/printtest.cpp:13)
 ```
 
+日志内容本身包含换行符时，控制台输出会把每一行单独打印，并在新行上重新计算宽度，`(%f)`等尾部信息仍对齐到最后一行行末。
+
+### 不换行打印（保留日志内容自身的换行）
+
+默认情况下，日志内容超出`wordWrap`设定的宽度时会由框架自动截断换行，并把`(%f)`等尾部信息对齐到行末。如果日志内容本身带有换行（例如格式化好的表格、堆栈、第三方库输出），框架的换行会打乱原有排版。
+
+这类日志可以在语句最前面加`noWrapPrint()`标记：
+
+```cpp
+#include <qlogcollector/server/colors/styledstring.h>
+
+qDebug() << noWrapPrint() << "line 1\nline 2\nline 3";
+qDebug().noquote() << noWrapPrint() << QStringLiteral("QString 内容\n也可以带换行");
+
+//多个前缀可以合成一个前缀使用
+qDebug() << allowNonAsciiPrint() + noWrapPrint() + throttlePrint() << "line 1\nline 2";
+```
+
+打印效果为（假设`wordWrap(115)`）：
+
+```
+[10:09:41.766] [main] main.log D->
+line 1
+line 2
+line 3
+                                                                                         (./test/printtest.cpp:13)
+```
+
+说明：
+- 第一行只打印框架前缀（时间、线程、分类、等级等），日志内容从下一行开始原样输出，不再按宽度截断或换行，内容里的换行保持原样。
+- 内容之后的模板部分（如`(%f)`代码位置）另起一行打印；控制台输出里会按`wordWrap`宽度右对齐，未设置宽度时靠左。
+- 对所有输出目标（控制台/文件/内存等）生效。
+- 标记必须放在日志语句的最前面；多个前缀可以用`+`合成一个前缀（如`allowNonAsciiPrint() + noWrapPrint() + throttlePrint()`），也可以连续`<<`，顺序不限。
+- 使用`QString`等会被`QDebug`转义换行的类型时，需要先`noquote()`，否则换行会变成`\n`文本。
+
 ### 使用带有颜色的日志内容
 在日志中添加颜色等样式，包含`"styledstring.h"`头文件，调用`styled`函数进行格式化：
 ```cpp

@@ -4,8 +4,8 @@
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
-void StdOutputTarget::writePart(const QList<FormatPart>& messageParts, const Message&) {
-    auto parts = TextUtils::wordwrap(messageParts);
+void StdOutputTarget::writePart(const QList<FormatPart>& messageParts, const Message& message) {
+    auto parts = TextUtils::wordwrap(messageParts, message.noWrap);
     for (auto part : parts) {
         auto content = part.content;
 

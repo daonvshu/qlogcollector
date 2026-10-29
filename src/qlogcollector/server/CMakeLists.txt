@@ -40,6 +40,8 @@ add_library(${PROJECT_NAME} ${_build_type}
     patternformatter.cpp
     logthrottle.h
     logthrottle.cpp
+    printmarker.h
+    printmarker.cpp
     tracescope.h
     tracescope.cpp
 

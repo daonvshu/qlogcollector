@@ -4,8 +4,18 @@
 #include <qregularexpression.h>
 
 #include "outputstyleconfig.h"
+#include "printmarker.h"
+#include "utils/textutils.h"
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
+
+//Markers written by the print helpers are invisible characters in front of the log
+//statement, QDebug puts a separator space after each of them.
+static bool isPrintMarker(const QChar& ch) {
+    return ch == allowNonAsciiPrintMarker()
+        || ch == noWrapPrintMarker()
+        || ch == logThrottleMarker();
+}
 
 MessageHandler::MessageHandler(QObject* parent)
     : QThread(parent)
@@ -28,20 +38,33 @@ void MessageHandler::setMessageFormat(const QString& format) {
 
 void MessageHandler::processMessage(const Message& message) {
     QMutexLocker locker(&messageMutex);
-    bool allowNonAscii = message.log.startsWith(QChar(0x2060));
-    if (LogCollector::styleConfig.mNonAsciiCheckEnabled && !allowNonAscii) {
-        auto filterMsg = message;
-        filterMsg.log = sanitizeLogMessage(filterMsg.log);
-        messages.append(filterMsg);
-    } else {
-        if (allowNonAscii) {
-            auto filterMsg = message;
-            filterMsg.log = message.log.mid(2);
-            messages.append(filterMsg);
+
+    Message filterMsg = message;
+    bool allowNonAscii = false;
+    bool noWrap = message.noWrap;
+    bool throttled = message.throttled;
+    //consume every marker in front of the content, they can be combined in any order
+    while (!filterMsg.log.isEmpty() && isPrintMarker(filterMsg.log.at(0))) {
+        const QChar marker = filterMsg.log.at(0);
+        if (marker == allowNonAsciiPrintMarker()) {
+            allowNonAscii = true;
+        } else if (marker == noWrapPrintMarker()) {
+            noWrap = true;
         } else {
-            messages.append(message);
+            throttled = true;
+        }
+        filterMsg.log.remove(0, 1);
+        if (filterMsg.log.startsWith(QLatin1Char(' '))) {
+            filterMsg.log.remove(0, 1);
         }
     }
+    filterMsg.noWrap = noWrap;
+    filterMsg.throttled = throttled;
+
+    if (LogCollector::styleConfig.mNonAsciiCheckEnabled && !allowNonAscii) {
+        filterMsg.log = sanitizeLogMessage(filterMsg.log);
+    }
+    messages.append(filterMsg);
     messageCondition.notify_all();
 }
 
@@ -115,6 +138,9 @@ void MessageHandler::writeMessage(const QList<Message>& buffer) {
         if (!throttleNote.isEmpty()) {
             insertThrottleNote(messagePart, throttleNote, throttleNoteStyle);
         }
+        if (message.noWrap) {
+            messagePart = TextUtils::noWrapLayout(messagePart);
+        }
         for (const auto& target : outputTargets) {
             target->writePart(messagePart, message);
         }
@@ -130,14 +156,8 @@ void MessageHandler::flushAllTargets(bool force) {
 }
 
 QString MessageHandler::sanitizeLogMessage(QString message) {
-    //the throttle marker is library internal information, keep it out of the non-ascii check
-    QString marker;
-    if (message.startsWith(logThrottleMarker())) {
-        marker = message.left(logThrottleMarkerLength);
-        message.remove(0, logThrottleMarkerLength);
-    }
     static QRegularExpression nonAsciiPattern("[^\\x00-\\x7F]+");
-    return marker + message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
+    return message.replace(nonAsciiPattern, "\033[31m[NON-ASCII BLOCKED!]\033[0m");
 }
 
 bool MessageHandler::isTraceCollectionEnabled() const {

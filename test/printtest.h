@@ -10,6 +10,10 @@ public:
 
     static void longText();
 
+    static void multilineText();
+
+    static void noWrapText();
+
     static void traceContextDemo();
 
     static void logThrottleDemo();

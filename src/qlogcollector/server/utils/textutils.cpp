@@ -7,7 +7,47 @@
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
-QList<FormatPart> TextUtils::wordwrap(const QList<FormatPart>& messageParts) {
+//Right align the parts which follow the content on the last line, so the no-wrap
+//print keeps the code location at the same right edge as the wrapped output
+static QList<FormatPart> alignNoWrapTail(const QList<FormatPart>& messageParts, int widthLimit) {
+    if (widthLimit <= 0) {
+        return messageParts;
+    }
+
+    int contentIndex = -1;
+    for (int i = 0; i < messageParts.size(); ++i) {
+        if (messageParts[i].type == FormatPart::Type::Message) {
+            contentIndex = i;
+            break;
+        }
+    }
+    if (contentIndex < 0) {
+        return messageParts;
+    }
+
+    int tailTextLength = 0;
+    for (int i = contentIndex + 1; i < messageParts.size(); ++i) {
+        tailTextLength += messageParts[i].contentLength;
+    }
+    if (tailTextLength == 0 || tailTextLength >= widthLimit) {
+        return messageParts;
+    }
+
+    QList<FormatPart> result;
+    for (int i = 0; i <= contentIndex; ++i) {
+        result << messageParts[i];
+    }
+    result.append({ FormatPart::Type::Message, QString(widthLimit - tailTextLength, ' '), false });
+    for (int i = contentIndex + 1; i < messageParts.size(); ++i) {
+        result << messageParts[i];
+    }
+    return result;
+}
+
+QList<FormatPart> TextUtils::wordwrap(const QList<FormatPart>& messageParts, bool noWrap) {
+    if (noWrap) {
+        return alignNoWrapTail(messageParts, LogCollector::styleConfig.mLogLineWidth);
+    }
     auto widthLimit = LogCollector::styleConfig.mLogLineWidth;
     if (widthLimit <= 0) {
         return messageParts;
@@ -30,44 +70,71 @@ QList<FormatPart> TextUtils::wordwrap(const QList<FormatPart>& messageParts) {
     int contentLimit = widthLimit - prefixHolder;
     auto contentParts = toContentParts(messageParts[contentIndex].content);
     int length = 0;
-    for (const auto& part : contentParts) {
-        if (part.isStyleCode) {
-            result << FormatPart{ FormatPart::Type::Message, "\x1b[" + part.part + "m" };
-            continue;
-        }
-        if (length + part.part.length() <= contentLimit) {
-            bool lineBreak = length + part.part.length() == contentLimit;
-            result << FormatPart{ FormatPart::Type::Message, part.part, lineBreak };
+    bool lineStart = false;
+
+    //append a piece of content, splitting it into chunks which fit the remaining width
+    auto appendContent = [&](QString text, bool forceBreak) {
+        if (text.length() <= contentLimit - length) {
+            const int textLength = text.length();
+            bool lineBreak = forceBreak || textLength == contentLimit - length;
+            if (lineStart && textLength != 0) {
+                text.prepend(QString(prefixHolder, ' '));
+            }
+            result << FormatPart{ FormatPart::Type::Message, text, lineBreak };
             if (lineBreak) {
                 length = 0;
+                lineStart = true;
             } else {
-                length += part.part.length();
+                length += textLength;
+                lineStart = textLength == 0 && lineStart;
             }
-            continue;
+            return;
         }
 
-        auto text = part.part;
         int remain = contentLimit - length;
-
         while (!text.isEmpty()) {
             int take = qMin(remain, text.length());
             auto chunk = text.left(take);
-            if (!result.isEmpty() && result.last().lineBreak) {
+            if (lineStart) {
                 chunk.prepend(QString(prefixHolder, ' '));
             }
 
-            bool shouldBreakLine = (take == remain);
+            bool shouldBreakLine = (take == remain) || (forceBreak && take == text.length());
             result.append({ FormatPart::Type::Message, chunk, shouldBreakLine });
 
             text.remove(0, take);
 
             if (shouldBreakLine) {
                 length = 0;
+                lineStart = true;
                 remain = contentLimit;
             } else {
                 length += take;
+                lineStart = false;
                 remain = contentLimit - length;
             }
+        }
+    };
+
+    for (const auto& part : contentParts) {
+        if (part.isStyleCode) {
+            result << FormatPart{ FormatPart::Type::Message, "\x1b[" + part.part + "m" };
+            continue;
+        }
+
+        //a line break inside the content takes its own line and resets the width
+        //calculation, the rest of the content wraps from the beginning of the next line
+        const auto lines = part.part.split(QLatin1Char('\n'));
+        for (int i = 0; i < lines.size(); ++i) {
+            auto line = lines[i];
+            if (line.endsWith(QLatin1Char('\r'))) {
+                line.chop(1);
+            }
+            const bool forceBreak = i + 1 < lines.size();
+            if (line.isEmpty() && !forceBreak && i > 0) {
+                continue;
+            }
+            appendContent(line, forceBreak);
         }
     }
 
@@ -104,6 +171,30 @@ QList<FormatPart> TextUtils::wordwrap(const QList<FormatPart>& messageParts) {
     for (int i = contentIndex + 1; i < messageParts.size(); ++i) {
         result << messageParts[i];
     }
+    return result;
+}
+
+QList<FormatPart> TextUtils::noWrapLayout(const QList<FormatPart>& messageParts) {
+    QList<FormatPart> result = messageParts;
+    int contentIndex = -1;
+    for (int i = 0; i < result.size(); ++i) {
+        if (result[i].type == FormatPart::Type::Message) {
+            contentIndex = i;
+            break;
+        }
+    }
+    if (contentIndex < 0) {
+        return result;
+    }
+
+    //the framework prefix takes its own line, so the content starts at the beginning
+    //of the next one and is printed exactly as the call site wrote it
+    if (contentIndex > 0) {
+        result[contentIndex - 1].lineBreak = true;
+    }
+    //the trailing parts such as the code line also start a new line after the content,
+    //unless the content already ends with one
+    result[contentIndex].lineBreak = !result[contentIndex].content.endsWith(QLatin1Char('\n'));
     return result;
 }
 

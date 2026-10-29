@@ -1,6 +1,5 @@
 #include "styledstring.h"
 #include "outputstyleconfig.h"
-#include "../logthrottle.h"
 
 QLOGCOLLECTOR_BEGIN_NAMESPACE
 
@@ -136,13 +135,5 @@ QLOGCOLLECTOR_END_NAMESPACE
 
 QLogCollector::StyledString styled(const QString& log, bool blink, bool underline) {
     return QLogCollector::StyledString(log, blink, underline);
-}
-
-QLogCollector::StyledString allowNonAsciiPrint() {
-    return QLogCollector::StyledString(QChar(0x2060), false, false);
-}
-
-QLogCollector::StyledString throttlePrint() {
-    return QLogCollector::StyledString(QLogCollector::logThrottleMarker(), false, false);
 }
 

@@ -3,6 +3,7 @@
 #include "colorformatter.h"
 
 #include <qlogcollector/comm/global.h>
+#include <qlogcollector/server/printmarker.h>
 
 #include <qobject.h>
 #include <qdebug.h>
@@ -78,11 +79,15 @@ inline StyledString& operator+(StyledString& styledString, const QString& s) {
     return styledString.append(s);
 }
 
+//combine two styled strings, used to write several print prefixes as one prefix,
+//e.g. allowNonAsciiPrint() + noWrapPrint() + throttlePrint()
+inline StyledString operator+(const StyledString& left, const StyledString& right) {
+    return StyledString(left.toStyledString() + right.toStyledString(), false, false);
+}
+
 QLOGCOLLECTOR_END_NAMESPACE
 
 extern QLogCollector::StyledString styled(const QString& log, bool blink = false, bool underline = false);
-extern QLogCollector::StyledString allowNonAsciiPrint();
-extern QLogCollector::StyledString throttlePrint();
 
 inline QDebug operator<<(QDebug debug, const QLogCollector::StyledString& styledString) {
     QDebugStateSaver saver(debug);

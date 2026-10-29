@@ -73,3 +73,11 @@ void LogTest::on_btn_collect_clicked() {
 void LogTest::on_btn_throttle_clicked() {
     PrintTest::logThrottleDemo();
 }
+
+void LogTest::on_btn_multiline_clicked() {
+    PrintTest::multilineText();
+}
+
+void LogTest::on_btn_no_wrap_clicked() {
+    PrintTest::noWrapText();
+}

@@ -51,6 +51,40 @@ void PrintTest::longText() {
     qDebug() << QString("fnasdjkfhbashjdfbasdfasbhjfdgahjkasdnfkasdgfbilaydfba").repeated(5);
 }
 
+//A line break inside the content takes its own line even without the no-wrap marker,
+//and the width calculation restarts on the next line.
+void PrintTest::multilineText() {
+    qDebug() << "multiline demo: first line\n"
+                "  second line is long and wraps before its own line break: "
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n"
+                "third line is short";
+}
+
+//The no-wrap marker keeps logs which already carry their own line breaks intact:
+//the framework prefix takes its own line, the content is printed exactly as the call
+//site wrote it, and the trailing parts such as the code line follow on a new line.
+void PrintTest::noWrapText() {
+    qDebug() << noWrapPrint() << "no-wrap demo: keep the table below as it is\n"
+                "  +--------+--------+\n"
+                "  | name   | value  |\n"
+                "  +--------+--------+\n"
+                "  | width  | 115    |\n"
+                "  +--------+--------+";
+
+    qDebug().noquote() << noWrapPrint() << QStringLiteral(
+        "no-wrap demo: this line is much longer than the configured width and is not cut\n") +
+        QStringLiteral("0123456789").repeated(20);
+
+    qDebug() << noWrapPrint() << "no-wrap demo: the content ends with a newline, no extra blank line\n";
+
+    //the print prefixes can be joined with '+' into one prefix, or streamed one by one
+    qDebug() << allowNonAsciiPrint() + noWrapPrint() + throttlePrint()
+             << "combined prefix demo: three prefixes in one statement\nsecond line";
+
+    qDebug() << noWrapPrint() << allowNonAsciiPrint()
+             << "chained prefix demo: prefixes streamed one by one\nsecond line";
+}
+
 namespace {
 void traceLeaf() {
     QLOG_TRACE_SCOPE;
